@@ -1,0 +1,11 @@
+PSTOPIC
+    about_SQLServerConfiguration
+
+SHORT DESCRIPTION
+    SQLServerConfiguration module provides functions to configure SQL Server.
+
+LONG DESCRIPTION
+    SQLServerConfiguration module provides functions to configure SQL Server.
+
+DETAILED DESCRIPTION
+    SQLServerConfiguration module provides functions to configure SQL Server.

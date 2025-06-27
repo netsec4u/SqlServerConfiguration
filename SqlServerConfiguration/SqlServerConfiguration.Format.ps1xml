@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+	<ViewDefinitions>
+		<View>
+			<Name>SqlProtocolProperty</Name>
+			<ViewSelectedBy>
+				<TypeName>SqlServerConfiguration.SqlProtocolProperty</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<!-- ################ TABLE DEFINITIONS ################ -->
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Certificate Thumbprint</Label>
+						<Width>48</Width>
+						<Alignment>left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Hide Instance</Label>
+						<Width>16</Width>
+						<Alignment>left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Extended Protection</Label>
+						<Width>16</Width>
+						<Alignment>left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Require Encryption</Label>
+						<Width>16</Width>
+						<Alignment>left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Require Strict Encryption</Label>
+						<Width>16</Width>
+						<Alignment>left</Alignment>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>CertificateThumbprint</PropertyName>
+								<Alignment>left</Alignment>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>HideInstance</PropertyName>
+								<Alignment>left</Alignment>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>ExtendedProtection</PropertyName>
+								<Alignment>left</Alignment>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>RequireEncryption</PropertyName>
+								<Alignment>left</Alignment>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>RequireStrictEncryption</PropertyName>
+								<Alignment>left</Alignment>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<View>
+			<Name>SqlStartupParameter</Name>
+			<ViewSelectedBy>
+				<TypeName>SqlServerConfiguration.SqlStartupParameter</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<!-- ################ TABLE DEFINITIONS ################ -->
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Name</Label>
+						<Width>24</Width>
+						<Alignment>left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Option</Label>
+						<Width>8</Width>
+						<Alignment>left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Value</Label>
+						<Width>96</Width>
+						<Alignment>left</Alignment>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>Name</PropertyName>
+								<Alignment>left</Alignment>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Option</PropertyName>
+								<Alignment>left</Alignment>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Value</PropertyName>
+								<Alignment>left</Alignment>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+	</ViewDefinitions>
+</Configuration>
