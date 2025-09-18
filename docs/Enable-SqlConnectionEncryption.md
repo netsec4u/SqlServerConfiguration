@@ -1,181 +1,246 @@
-﻿---
+---
+document type: cmdlet
 external help file: SqlServerConfiguration-help.xml
+HelpUri: ''
+Locale: en-US
 Module Name: SqlServerConfiguration
-online version:
-schema: 2.0.0
+ms.date: 07/29/2025
+PlatyPS schema version: 2024-05-01
+title: Enable-SqlConnectionEncryption
 ---
 
 # Enable-SqlConnectionEncryption
 
 ## SYNOPSIS
+
 Enables SQL Server connection encryption.
 
 ## SYNTAX
 
 ### ServerInstance (Default)
+
 ```
 Enable-SqlConnectionEncryption
-	-ServerInstance <String>
-	[-CertificateThumbprint <String>]
-	[-RequireEncryption]
-	[-ServiceRestart]
-	[-WhatIf]
-	[-Confirm]
-	[<CommonParameters>]
+  -ServerInstance <string>
+  [-CertificateThumbprint <string>]
+  [-RequireEncryption]
+  [-ServiceRestart]
+  [-WhatIf]
+  [-Confirm]
+  [<CommonParameters>]
 ```
 
 ### SmoServerObject
+
 ```
 Enable-SqlConnectionEncryption
-	-SmoServerObject <Server>
-	[-CertificateThumbprint <String>]
-	[-RequireEncryption]
-	[-ServiceRestart]
-	[-WhatIf]
-	[-Confirm]
-	[<CommonParameters>]
+  -SmoServerObject <Server>
+  [-CertificateThumbprint <string>]
+  [-RequireEncryption]
+  [-ServiceRestart]
+  [-WhatIf]
+  [-Confirm]
+  [<CommonParameters>]
 ```
 
+## ALIASES
+
+This cmdlet has the following aliases:
+  None
+
 ## DESCRIPTION
+
 Enables SQL Server connection encryption.
 
 ## EXAMPLES
 
 ### Example 1
-```powershell
+
 Enable-SqlConnectionEncryption -ServerInstance MyServer
-```
 
 Enables SQL connection encryption on MyServer.
 
 ### Example 2
-```powershell
+
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
 
 Enable-SqlConnectionEncryption -SmoServerObject $SmoServer
-```
 
 Enables SQL connection encryption using SMO server session.
 
 ## PARAMETERS
 
 ### -CertificateThumbprint
+
 Specifies certificate thumbprint.
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RequireEncryption
-Specifies encryption requirement.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ServiceRestart
-Restart SQL Server service.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ServerInstance
-SQL Server host name and instance name.
-
-```yaml
-Type: String
-Parameter Sets: ServerInstance
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SmoServerObject
-SMO Server object
-
-```yaml
-Type: Server
-Parameter Sets: SmoServerObject
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.String
+DefaultValue: None
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases:
+- cf
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+### -RequireEncryption
+
+Specifies encryption requirement.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ServerInstance
+
+SQL Server host name and instance name.
+
+```yaml
+Type: System.String
+DefaultValue: None
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ServerInstance
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ServiceRestart
+
+Restart SQL Server service.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SmoServerObject
+
+SMO Server object
+
+```yaml
+Type: Microsoft.SqlServer.Management.Smo.Server
+DefaultValue: None
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: SmoServerObject
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: wi
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: False
+SupportsWildcards: false
+Aliases:
+- wi
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
 ```
 
 ### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable,
+-ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](https://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
-
-### None
 
 ## OUTPUTS
 
 ### System.Void
 
+
+
 ## NOTES
 
+
+
+
 ## RELATED LINKS
+
+None.
+
