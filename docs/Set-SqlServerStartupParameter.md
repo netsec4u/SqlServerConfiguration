@@ -1,6 +1,6 @@
 ---
 document type: cmdlet
-external help file: SqlServerConfiguration-help.xml
+external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
@@ -13,7 +13,7 @@ title: Set-SqlServerStartupParameter
 
 ## SYNOPSIS
 
-Sets SQL server startup parameter value.
+Sets a SQL Server startup parameter value.
 
 ## SYNTAX
 
@@ -50,21 +50,24 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-Sets SQL server startup parameter value.
+Sets a SQL Server startup parameter value.
 
 ## EXAMPLES
 
 ### Example 1
 
+```powershell
 Set-SqlServerStartupParameter -ServerInstance MyServer -Name ErrorLogPath -Value 'C:\ERRORLOG'
+```
 
 Sets SQL Server startup parameter ErrorLogPath on server MyServer.
 
 ### Example 2
 
+```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-
 Set-SqlServerStartupParameter -SmoServerObject $SmoServer -Name ErrorLogPath -Value 'C:\ERRORLOG'
+```
 
 Sets SQL Server startup parameter ErrorLogPath using SMO session.
 
@@ -94,7 +97,7 @@ HelpMessage: ''
 
 ### -Name
 
-The name of the startup option.
+The name of the startup parameter to set.
 
 ```yaml
 Type: SqlServerConfiguration.StartupParameter
@@ -136,7 +139,7 @@ HelpMessage: ''
 
 ### -ServiceRestart
 
-Restart SQL Server service.
+Restart the SQL Server service after making changes.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -157,7 +160,7 @@ HelpMessage: ''
 
 ### -SmoServerObject
 
-SMO Server object
+An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server
@@ -178,7 +181,7 @@ HelpMessage: ''
 
 ### -Value
 
-Specifies the value of the startup parameter for parameters that requires a value.
+The value of the startup parameter for parameters that requires a value.
 
 ```yaml
 Type: System.String

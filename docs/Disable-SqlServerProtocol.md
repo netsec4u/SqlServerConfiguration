@@ -1,6 +1,6 @@
 ---
 document type: cmdlet
-external help file: SqlServerConfiguration-help.xml
+external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
@@ -13,7 +13,7 @@ title: Disable-SqlServerProtocol
 
 ## SYNOPSIS
 
-Disables SQL Server protocol.
+Disables a SQL Server network protocol.
 
 ## SYNTAX
 
@@ -48,21 +48,24 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-Disables SQL Server protocol.
+Disables a SQL Server network protocol such as TCP/IP, Named Pipes, or Shared Memory.
 
 ## EXAMPLES
 
 ### Example 1
 
+```powershell
 Disable-SqlServerProtocol -ServerInstance MyServer -Protocol Np
+```
 
 Disables Np protocol on MyServer.
 
 ### Example 2
 
+```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-
 Disable-SqlServerProtocol -SmoServerObject $SmoServer -Protocol Np
+```
 
 Disables Np protocol using the SmoServer session.
 
@@ -113,7 +116,7 @@ HelpMessage: ''
 
 ### -ServerInstance
 
-SQL Server host name and instance name.
+The name of the SQL Server instance to connect to.
 
 ```yaml
 Type: System.String
@@ -134,7 +137,7 @@ HelpMessage: ''
 
 ### -ServiceRestart
 
-Restart SQL Server service.
+Restart the SQL Server service after making changes.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -155,7 +158,7 @@ HelpMessage: ''
 
 ### -SmoServerObject
 
-SMO Server object
+An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server

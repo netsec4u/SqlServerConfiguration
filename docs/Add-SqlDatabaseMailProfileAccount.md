@@ -1,30 +1,30 @@
----
+﻿---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 01/26/2026
 PlatyPS schema version: 2024-05-01
-title: Remove-SqlServerStartupParameter
+title: Add-SqlDatabaseMailProfileAccount
 ---
 
-# Remove-SqlServerStartupParameter
+# Add-SqlDatabaseMailProfileAccount
 
 ## SYNOPSIS
 
-Removes a startup parameter from a SQL Server instance.
+Adds a Database Mail Profile Account.
 
 ## SYNTAX
 
 ### ServerInstance (Default)
 
 ```
-Remove-SqlServerStartupParameter
+Add-SqlDatabaseMailProfileAccount
   -ServerInstance <string>
-  -Name <StartupParameter>
-  [-Value <string>]
-  [-ServiceRestart]
+  -MailProfileName <string>
+  -MailAccountName <string>
+  -SequenceNumber <int>
   [-WhatIf]
   [-Confirm]
   [<CommonParameters>]
@@ -33,11 +33,11 @@ Remove-SqlServerStartupParameter
 ### SmoServerObject
 
 ```
-Remove-SqlServerStartupParameter
+Add-SqlDatabaseMailProfileAccount
   -SmoServerObject <Server>
-  -Name <StartupParameter>
-  [-Value <string>]
-  [-ServiceRestart]
+  -MailProfileName <string>
+  -MailAccountName <string>
+  -SequenceNumber <int>
   [-WhatIf]
   [-Confirm]
   [<CommonParameters>]
@@ -50,26 +50,26 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-Removes a startup parameter from a SQL Server instance.
+Adds a Database Mail Profile Account.
 
 ## EXAMPLES
 
 ### Example 1
 
 ```powershell
-Remove-SqlServerStartupParameter -ServerInstance MyServer -Name TraceFlag -Value 1234
+Add-SqlDatabaseMailProfileAccount -ServerInstance 'MyServer' -MailProfileName 'MyProfile' -MailAccountName 'MyAccount' -SequenceNumber 1
 ```
 
-Removes SQL Server Trace Flag 1234 startup parameter from MyServer.
+Adds the specified mail account to the specified mail profile with the specified sequence number.
 
 ### Example 2
 
 ```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-Remove-SqlServerStartupParameter -SmoServerObject $SmoServer -Name TraceFlag -Value 1234
+Add-SqlDatabaseMailProfileAccount -SmoServerObject $SmoServer -MailProfileName 'MyProfile' -MailAccountName 'MyAccount' -SequenceNumber 1
 ```
 
-Removes SQL Server Trace Flag 1234 startup parameter using the SMO session.
+Adds the specified mail account to the specified mail profile with the specified sequence number using the SmoServer session.
 
 ## PARAMETERS
 
@@ -79,7 +79,7 @@ Prompts you for confirmation before running the cmdlet.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
+DefaultValue: ''
 SupportsWildcards: false
 Aliases:
 - cf
@@ -95,13 +95,55 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -Name
+### -MailAccountName
 
-The name of the startup parameter to remove.
+Specifies the Database Mail Account name.
 
 ```yaml
-Type: SqlServerConfiguration.StartupParameter
-DefaultValue: None
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MailProfileName
+
+Specifies the Database Mail Profile name.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SequenceNumber
+
+Specifies the sequence number for the account in the profile.
+
+```yaml
+Type: System.Int32
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -122,7 +164,7 @@ The name of the SQL Server instance to connect to.
 
 ```yaml
 Type: System.String
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -137,34 +179,13 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -ServiceRestart
-
-Restart the SQL Server service after making changes.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### -SmoServerObject
 
 An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -179,35 +200,13 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -Value
-
-The value of the startup parameter to remove (required when Name is 'TraceFlag').
-
-```yaml
-Type: System.String
-DefaultValue: None
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs.
-The cmdlet is not run.
+Runs the command in a mode that only reports what would happen without performing the actions.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
+DefaultValue: ''
 SupportsWildcards: false
 Aliases:
 - wi
@@ -242,8 +241,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 
 
-
 ## RELATED LINKS
 
-None.
+None
 

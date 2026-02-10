@@ -1,45 +1,41 @@
----
+﻿---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 01/26/2026
 PlatyPS schema version: 2024-05-01
-title: Remove-SqlServerStartupParameter
+title: Set-SqlDatabaseMailProfile
 ---
 
-# Remove-SqlServerStartupParameter
+# Set-SqlDatabaseMailProfile
 
 ## SYNOPSIS
 
-Removes a startup parameter from a SQL Server instance.
+Modifies an existing Database Mail Profile on a SQL Server instance.
 
 ## SYNTAX
 
 ### ServerInstance (Default)
 
 ```
-Remove-SqlServerStartupParameter
+Set-SqlDatabaseMailProfile
   -ServerInstance <string>
-  -Name <StartupParameter>
-  [-Value <string>]
-  [-ServiceRestart]
-  [-WhatIf]
-  [-Confirm]
+  -MailProfileName <string>
+  -NewMailProfileName <string>
+  [-Description <string>]
   [<CommonParameters>]
 ```
 
 ### SmoServerObject
 
 ```
-Remove-SqlServerStartupParameter
+Set-SqlDatabaseMailProfile
   -SmoServerObject <Server>
-  -Name <StartupParameter>
-  [-Value <string>]
-  [-ServiceRestart]
-  [-WhatIf]
-  [-Confirm]
+  -MailProfileName <string>
+  -NewMailProfileName <string>
+  [-Description <string>]
   [<CommonParameters>]
 ```
 
@@ -50,39 +46,38 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-Removes a startup parameter from a SQL Server instance.
+The Set-SqlDatabaseMailProfile cmdlet allows you to modify properties of an existing Database Mail Profile on a specified SQL Server instance.
 
 ## EXAMPLES
 
 ### Example 1
 
 ```powershell
-Remove-SqlServerStartupParameter -ServerInstance MyServer -Name TraceFlag -Value 1234
+Set-SqlDatabaseMailProfile -ServerInstance "MyServer" -MailProfileName "OldProfileName" -NewMailProfileName "NewProfileName" -Description "Updated description for the mail profile."
 ```
 
-Removes SQL Server Trace Flag 1234 startup parameter from MyServer.
+Sets the name and description of an existing SQL Database Mail profile on the specified server instance.
 
 ### Example 2
 
 ```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-Remove-SqlServerStartupParameter -SmoServerObject $SmoServer -Name TraceFlag -Value 1234
+Set-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName "OldProfileName" -NewMailProfileName "NewProfileName" -Description "Updated description for the mail profile."
 ```
 
-Removes SQL Server Trace Flag 1234 startup parameter using the SMO session.
+Sets the name and description of an existing SQL Database Mail profile using the SmoServer session.
 
 ## PARAMETERS
 
-### -Confirm
+### -Description
 
-Prompts you for confirmation before running the cmdlet.
+A new description for the Database Mail Profile.
 
 ```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
+Type: System.String
+DefaultValue: ''
 SupportsWildcards: false
-Aliases:
-- cf
+Aliases: []
 ParameterSets:
 - Name: (All)
   Position: Named
@@ -95,13 +90,34 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -Name
+### -MailProfileName
 
-The name of the startup parameter to remove.
+The current name of the Database Mail Profile to be modified.
 
 ```yaml
-Type: SqlServerConfiguration.StartupParameter
-DefaultValue: None
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -NewMailProfileName
+
+The new name for the Database Mail Profile.
+
+```yaml
+Type: System.String
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -122,7 +138,7 @@ The name of the SQL Server instance to connect to.
 
 ```yaml
 Type: System.String
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -137,84 +153,19 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -ServiceRestart
-
-Restart the SQL Server service after making changes.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### -SmoServerObject
 
 An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: SmoServerObject
   Position: Named
   IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -Value
-
-The value of the startup parameter to remove (required when Name is 'TraceFlag').
-
-```yaml
-Type: System.String
-DefaultValue: None
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -WhatIf
-
-Shows what would happen if the cmdlet runs.
-The cmdlet is not run.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases:
-- wi
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
   ValueFromRemainingArguments: false
@@ -234,7 +185,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-### System.Void
+### Microsoft.SqlServer.Management.Smo.Mail.MailProfile
 
 
 
@@ -242,8 +193,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 
 
-
 ## RELATED LINKS
 
-None.
+None
 

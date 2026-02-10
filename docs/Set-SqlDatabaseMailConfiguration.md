@@ -1,37 +1,39 @@
----
+﻿---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 01/26/2026
 PlatyPS schema version: 2024-05-01
-title: Get-SqlServerService
+title: Set-SqlDatabaseMailConfiguration
 ---
 
-# Get-SqlServerService
+# Set-SqlDatabaseMailConfiguration
 
 ## SYNOPSIS
 
-Retrieves SQL Server services and their properties.
+Updates a SQL Database Mail Account configuration.
 
 ## SYNTAX
 
 ### ServerInstance (Default)
 
 ```
-Get-SqlServerService
+Set-SqlDatabaseMailConfiguration
   -ServerInstance <string>
-  [-ServiceName <string>]
+  -MailConfigurationName <DatabaseMailConfiguration>
+  -MailConfigurationValue <string>
   [<CommonParameters>]
 ```
 
 ### SmoServerObject
 
 ```
-Get-SqlServerService
+Set-SqlDatabaseMailConfiguration
   -SmoServerObject <Server>
-  [-ServiceName <string>]
+  -MailConfigurationName <DatabaseMailConfiguration>
+  -MailConfigurationValue <string>
   [<CommonParameters>]
 ```
 
@@ -42,36 +44,78 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-This cmdlet connects to a specified SQL Server instance and retrieves information about its services, including their status and configuration.
+Updates a SQL Database Mail Account configuration on a specified SQL Server instance.
 
 ## EXAMPLES
 
 ### Example 1
 
 ```powershell
-Get-SqlServerService -ServerInstance MyServer
+Set-SqlDatabaseMailConfiguration -ServerInstance "MyServer" -MailConfigurationName "MaxFileSize" -Value "10240"
 ```
 
-Gets SQL Services from MyServer.
+Set the Database Mail configuration option MaxFileSize to 10240 KB on the specified SQL Server instance.
 
 ### Example 2
 
 ```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-Get-SqlServerService -SmoServerObject $SmoServer
+Set-SqlDatabaseMailConfiguration -SmoServerObject $SmoServer -MailConfigurationName "MaxFileSize" -Value "10240"
 ```
 
-Gets SQL Services using SMO Server session.
+Set the Database Mail configuration option MaxFileSize to 10240 KB using the SmoServer session.
 
 ## PARAMETERS
 
-### -ServerInstance
+### -MailConfigurationName
 
-SQL Server host name and instance name.
+Specifies the name of the Database Mail configuration to update.
+
+```yaml
+Type: DatabaseMailConfiguration
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -MailConfigurationValue
+
+Specifies the new value for the Database Mail configuration.
 
 ```yaml
 Type: System.String
-DefaultValue: None
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ServerInstance
+
+The name of the SQL Server instance to connect to.
+
+```yaml
+Type: System.String
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -86,34 +130,13 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -ServiceName
-
-The name of the SQL Server instance to connect to.
-
-```yaml
-Type: System.String
-DefaultValue: None
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### -SmoServerObject
 
 An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -139,7 +162,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-### Microsoft.SqlServer.Management.Smo.Wmi.ServerProtocol
+### SqlServerConfiguration.SqlDatabaseMailConfiguration
 
 
 
@@ -147,8 +170,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 
 
-
 ## RELATED LINKS
 
-None.
+
 

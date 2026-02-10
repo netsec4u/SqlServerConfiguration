@@ -1,6 +1,6 @@
 ---
 document type: cmdlet
-external help file: SqlServerConfiguration-help.xml
+external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
@@ -13,7 +13,7 @@ title: Get-SqlServerProtocol
 
 ## SYNOPSIS
 
-Gets SQL Server protocols.
+Retrieves the protocol settings for a SQL Server instance.
 
 ## SYNTAX
 
@@ -42,21 +42,25 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-Gets SQL Server protocols.
+The Get-SqlServerProtocol cmdlet connects to a specified SQL Server instance and retrieves the protocol settings, such as TCP/IP, Named Pipes, and Shared Memory.
+It returns a Microsoft.SqlServer.Management.Smo.Wmi.ServerProtocol object that contains information about the protocol configuration.
 
 ## EXAMPLES
 
 ### Example 1
 
+```powershell
 Get-SqlServerProtocol -ServerInstance MyServer
+```
 
 Gets the SQL server protocols from MyServer.
 
 ### Example 2
 
+```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-
 Get-SqlServerProtocol -SmoServerObject $SmoServer
+```
 
 Gets the SQL server protocols using SMO server session.
 
@@ -85,7 +89,7 @@ HelpMessage: ''
 
 ### -ServerInstance
 
-SQL Server host name and instance name.
+The name of the SQL Server instance to connect to.
 
 ```yaml
 Type: System.String
@@ -106,7 +110,7 @@ HelpMessage: ''
 
 ### -SmoServerObject
 
-SMO Server object
+An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server

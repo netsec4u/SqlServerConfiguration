@@ -1,6 +1,6 @@
 ---
 document type: cmdlet
-external help file: SqlServerConfiguration-help.xml
+external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
@@ -13,7 +13,7 @@ title: Connect-SmoWmiManagedComputer
 
 ## SYNOPSIS
 
-Connects to SMO WMI Managed Computer.
+Connect to a SQL Server Managed Computer via WMI.
 
 ## SYNTAX
 
@@ -33,13 +33,15 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-Connects to SMO WMI Managed Computer.
+Connect to a SQL Server Managed Computer via WMI.
 
 ## EXAMPLES
 
 ### Example 1
 
+```powershell
 Connect-SmoWmiManagedComputer -ComputerName MyServer
+```
 
 Connects to MyServer SMO WMI manged computer.
 

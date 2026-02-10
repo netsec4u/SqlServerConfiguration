@@ -1,10 +1,10 @@
----
+﻿---
 document type: cmdlet
-external help file: SqlServerConfiguration-help.xml
+external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 01/26/2026
 PlatyPS schema version: 2024-05-01
 title: Enable-SqlConnectionEncryption
 ---
@@ -13,7 +13,7 @@ title: Enable-SqlConnectionEncryption
 
 ## SYNOPSIS
 
-Enables SQL Server connection encryption.
+Enables SQL Server Connection Encryption.
 
 ## SYNTAX
 
@@ -45,28 +45,31 @@ Enable-SqlConnectionEncryption
 
 ## ALIASES
 
-This cmdlet has the following aliases:
-  None
+This cmdlet has the following aliases,
+  {{Insert list of aliases}}
 
 ## DESCRIPTION
 
-Enables SQL Server connection encryption.
+Enables SQL Server Connection Encryption for a specified SQL Server instance.
 
 ## EXAMPLES
 
 ### Example 1
 
-Enable-SqlConnectionEncryption -ServerInstance MyServer
+```powershell
+Enable-SqlConnectionEncryption -ServerInstance 'MyServer' -CertificateThumbprint '761f1ef0dd91880af2d3cadd571b734b89eb3fa3' -ServiceRestart
+```
 
-Enables SQL connection encryption on MyServer.
+Enable encryption for connections to the specified SQL Server instance using the specified certificate thumbprint and restart the SQL Server service.
 
 ### Example 2
 
+```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
+Enable-SqlConnectionEncryption -SmoServerObject $SmoServer -CertificateThumbprint '761f1ef0dd91880af2d3cadd571b734b89eb3fa3' -ServiceRestart
+```
 
-Enable-SqlConnectionEncryption -SmoServerObject $SmoServer
-
-Enables SQL connection encryption using SMO server session.
+Enable encryption for connections to the specified SQL Server instance using the specified certificate thumbprint and restart the SQL Server service using the SmoServer session.
 
 ## PARAMETERS
 
@@ -76,7 +79,7 @@ Specifies certificate thumbprint.
 
 ```yaml
 Type: System.String
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -97,7 +100,7 @@ Prompts you for confirmation before running the cmdlet.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
+DefaultValue: ''
 SupportsWildcards: false
 Aliases:
 - cf
@@ -119,7 +122,7 @@ Specifies encryption requirement.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -136,11 +139,11 @@ HelpMessage: ''
 
 ### -ServerInstance
 
-SQL Server host name and instance name.
+The name of the SQL Server instance to connect to.
 
 ```yaml
 Type: System.String
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -157,11 +160,11 @@ HelpMessage: ''
 
 ### -ServiceRestart
 
-Restart SQL Server service.
+Restart the SQL Server service after making changes.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -178,11 +181,11 @@ HelpMessage: ''
 
 ### -SmoServerObject
 
-SMO Server object
+An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -204,7 +207,7 @@ The cmdlet is not run.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
+DefaultValue: ''
 SupportsWildcards: false
 Aliases:
 - wi
@@ -242,5 +245,5 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-None.
+None
 

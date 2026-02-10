@@ -1,37 +1,39 @@
----
+﻿---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 01/26/2026
 PlatyPS schema version: 2024-05-01
-title: Get-SqlServerService
+title: Get-SqlDatabaseMailProfileAccount
 ---
 
-# Get-SqlServerService
+# Get-SqlDatabaseMailProfileAccount
 
 ## SYNOPSIS
 
-Retrieves SQL Server services and their properties.
+Retrieves Database Mail profile accounts from a SQL Server instance.
 
 ## SYNTAX
 
 ### ServerInstance (Default)
 
 ```
-Get-SqlServerService
+Get-SqlDatabaseMailProfileAccount
   -ServerInstance <string>
-  [-ServiceName <string>]
+  -MailProfileName <string>
+  [-AccountName <string>]
   [<CommonParameters>]
 ```
 
 ### SmoServerObject
 
 ```
-Get-SqlServerService
+Get-SqlDatabaseMailProfileAccount
   -SmoServerObject <Server>
-  [-ServiceName <string>]
+  -MailProfileName <string>
+  [-AccountName <string>]
   [<CommonParameters>]
 ```
 
@@ -42,57 +44,38 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-This cmdlet connects to a specified SQL Server instance and retrieves information about its services, including their status and configuration.
+This cmdlet connects to a specified SQL Server instance and retrieves Database Mail profile accounts.
+You can specify the server instance directly or provide an existing SMO Server object.
+Additionally, you can filter the results by profile name and account name.
 
 ## EXAMPLES
 
 ### Example 1
 
 ```powershell
-Get-SqlServerService -ServerInstance MyServer
+Get-SqlDatabaseMailAccount -ServerInstance "MyServer" -MailAccountName "MyMailAccount"
 ```
 
-Gets SQL Services from MyServer.
+Retrieves a specific Database Mail Account from the specified SQL Server instance.
 
 ### Example 2
 
 ```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-Get-SqlServerService -SmoServerObject $SmoServer
+Get-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName "MyMailAccount"
 ```
 
-Gets SQL Services using SMO Server session.
+Retrieves a specific Database Mail Account using the SmoServer session.
 
 ## PARAMETERS
 
-### -ServerInstance
+### -AccountName
 
-SQL Server host name and instance name.
-
-```yaml
-Type: System.String
-DefaultValue: None
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: ServerInstance
-  Position: Named
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -ServiceName
-
-The name of the SQL Server instance to connect to.
+The name of the Database Mail account to retrieve.
 
 ```yaml
 Type: System.String
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -107,13 +90,55 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -MailProfileName
+
+The name of the Database Mail profile to filter the accounts.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ServerInstance
+
+The name of the SQL Server instance to connect to.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ServerInstance
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -SmoServerObject
 
 An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -139,7 +164,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-### Microsoft.SqlServer.Management.Smo.Wmi.ServerProtocol
+### SqlServerConfiguration.SqlDatabaseMailProfilePrincipal
 
 
 
@@ -147,8 +172,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 
 
-
 ## RELATED LINKS
 
-None.
+None
 

@@ -21,10 +21,25 @@ catch {
 #EndRegion
 
 #Region Enumerations
+enum DatabaseMailConfiguration {
+	AccountRetryAttempts
+	AccountRetryDelay
+	DatabaseMailExeMinimumLifeTime
+	DefaultAttachmentEncoding
+	LoggingLevel
+	MaxFileSize
+	ProhibitedExtensions
+}
 enum ServerProtocols {
 	Np
 	Sm
 	Tcp
+}
+
+enum SMTPAuthenticationType {
+	Anonymous
+	Windows
+	Basic
 }
 #EndRegion
 
@@ -35,6 +50,34 @@ using System.IO;
 
 namespace SqlServerConfiguration
 {
+	public class SqlDatabaseMailConfiguration
+	{
+		public string Name;
+		public string Value;
+		public string Description;
+
+		public SqlDatabaseMailConfiguration (Microsoft.SqlServer.Management.Smo.Mail.ConfigurationValue ConfigurationValue)
+		{
+			this.Name = ConfigurationValue.Name;
+			this.Value = ConfigurationValue.Value;
+			this.Description = ConfigurationValue.Description;
+		}
+	}
+
+	public class SqlDatabaseMailProfileAccount
+	{
+		public string ProfileName;
+		public string AccountName;
+		public int SequenceNumber;
+	}
+
+	public class SqlDatabaseMailProfilePrincipal
+	{
+		public string ProfileName;
+		public string PrincipalName;
+		public bool IsDefault;
+	}
+
 	public class SqlProtocolProperty
 	{
 		public string CertificateThumbprint;
@@ -257,7 +300,19 @@ namespace SqlServerConfiguration
 }
 '@
 
-Add-Type -TypeDefinition $TypeDefinition
+$ReferencedAssemblies = @(
+	[AppDomain]::CurrentDomain.GetAssemblies().where({$_.ManifestModule.Name -eq 'Microsoft.SqlServer.Smo.dll'}).Location
+	[AppDomain]::CurrentDomain.GetAssemblies().where({$_.ManifestModule.Name -eq 'Microsoft.SqlServer.Management.Sdk.Sfc.dll'}).Location
+)
+
+$TypeParameters = @{
+	TypeDefinition = $TypeDefinition
+	ReferencedAssemblies = $ReferencedAssemblies
+	WarningAction = 'Ignore'
+	IgnoreWarnings = $true
+}
+
+Add-Type @TypeParameters
 
 Remove-Variable -Name @('TypeDefinition')
 #EndRegion
@@ -770,10 +825,449 @@ function Test-SQLCertificateRequirement {
 }
 #EndRegion
 
+
+function Add-SqlDatabaseMailAccount {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'High',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([Microsoft.SqlServer.Management.Smo.Mail.MailAccount])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailAccountName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$Description,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$EmailDisplayName,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$EmailAddress,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$ReplyToAddress,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$SmtpServerName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[int]$SmtpServerPort = 25,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[boolean]$UseSslConnection = $true,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[SMTPAuthenticationType]$SMTPAuthenticationType = 'Anonymous',
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[PSCredential]$Credential
+	)
+
+	begin {
+		$ServerInstanceParameterSets = @('ServerInstance')
+
+		try {
+			if ($SMTPAuthenticationType -in @('Anonymous', 'Windows')) {
+				if ($PSBoundParameters.ContainsKey('Credential')) {
+					throw [System.Management.Automation.ErrorRecord]::New(
+						[Exception]::New('Credential parameter is invalid when SMTPAuthenticationType is Anonymous or Windows.'),
+						'1',
+						[System.Management.Automation.ErrorCategory]::InvalidArgument,
+						$SMTPAuthenticationType
+					)
+				}
+			} else {
+				if (-not $PSBoundParameters.ContainsKey('Credential')) {
+					throw [System.Management.Automation.ErrorRecord]::New(
+						[Exception]::New('Credential parameter is required when SMTPAuthenticationType is Basic.'),
+						'1',
+						[System.Management.Automation.ErrorCategory]::InvalidArgument,
+						$SMTPAuthenticationType
+					)
+				}
+			}
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$MailAccount = [Microsoft.SqlServer.Management.SMO.Mail.MailAccount]::New($SmoServer.Mail, $MailAccountName, $Description, $EmailDisplayName, $EmailAddress)
+			$MailAccount.ReplyToAddress = $ReplyToAddress
+
+			if ($PSCmdlet.ShouldProcess($MailAccountName, 'Add SQL DatabaseMailAccount')) {
+				$MailAccount.Create()
+
+				$MailServer = $MailAccount.MailServers.Item($SmoServer.DomainInstanceName)
+
+				$MailServer.Rename($SmtpServerName)
+				$MailServer.UseSSLConnection = $UseSslConnection
+				$MailServer.Port = $SmtpServerPort
+
+				switch ($SMTPAuthenticationType) {
+					'Anonymous' {
+						$MailServer.UseDefaultCredentials = $false
+					}
+					'Windows' {
+						$MailServer.UseDefaultCredentials = $true
+					}
+					'Basic' {
+						$MailServer.UseDefaultCredentials = $false
+
+						$MailServer.SetAccount($Credential.UserName, $Credential.Password)
+					}
+				}
+
+				$MailAccount.Alter()
+			}
+
+			$MailAccount
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Add-SqlDatabaseMailProfileAccount {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([void])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailProfileName,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailAccountName,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[int]$SequenceNumber
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+
+			$MailProfile.AddAccount($MailAccountName, $SequenceNumber)
+
+			if ($PSCmdlet.ShouldProcess($MailProfileName, 'Add SQL DatabaseMailProfile Account.')) {
+				$MailProfile.Alter()
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Add-SqlDatabaseMailProfilePrincipal {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([void])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailProfileName,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$PrincipalName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[bool]$DefaultProfile = $false
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			if ($PrincipalName -notin @('public', '##MS_PolicyEventProcessingLogin##', '##MS_PolicyTsqlExecutionLogin##', 'MS_DataCollectionInternalUser')) {
+				$DatabaseObject = Get-SmoDatabaseObject -SmoServerObject $SmoServer -DatabaseName msdb
+				$RoleMembers = $DatabaseObject.Roles['DatabaseMailUserRole'].EnumMembers()
+
+				if ($PrincipalName -notin $RoleMembers) {
+					throw [System.Management.Automation.ErrorRecord]::New(
+						[Exception]::New("Principal '$PrincipalName' is not a member of DatabaseMailUserRole."),
+						'1',
+						[System.Management.Automation.ErrorCategory]::InvalidArgument,
+						$PrincipalName
+					)
+				}
+			}
+
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+
+			$MailProfile.AddPrincipal($PrincipalName, $DefaultProfile)
+
+			if ($PSCmdlet.ShouldProcess($MailProfileName, 'Add SQL DatabaseMailProfile Principal.')) {
+				$MailProfile.Alter()
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
 function Add-SqlServerStartupParameter {
 	<#
 	.EXTERNALHELP
-	SqlServerConfiguration-help.xml
+	SqlServerConfiguration-Help.xml
 	#>
 
 	[System.Diagnostics.DebuggerStepThrough()]
@@ -828,9 +1322,9 @@ function Add-SqlServerStartupParameter {
 	)
 
 	begin {
-		try {
-			$ServerInstanceParameterSets = @('ServerInstance')
+		$ServerInstanceParameterSets = @('ServerInstance')
 
+		try {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
 				$SmoServerParameters = @{
 					'ServerInstance' = $ServerInstance
@@ -845,9 +1339,11 @@ function Add-SqlServerStartupParameter {
 			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
 		}
 		catch {
-			if (Test-Path -Path Variable:\SmoServer) {
-				if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-					Disconnect-SmoServer -SmoServerObject $SmoServer
+			if ($PSCmdlet.ParameterSetName -in $DatabaseNameParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
 				}
 			}
 
@@ -921,10 +1417,98 @@ function Add-SqlServerStartupParameter {
 	}
 }
 
+function Disable-SqlDatabaseMail {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'High',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([void])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$SmoServer.Configuration.DatabaseMailEnabled.ConfigValue = 0
+
+			if ($PSCmdlet.ShouldProcess($SmoServer.Name, 'Disable SQL Database Mail')) {
+				$SmoServer.Configuration.Alter()
+
+				$SmoServer.Refresh()
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
 function Disable-SqlServerProtocol {
 	<#
 	.EXTERNALHELP
-	SqlServerConfiguration-help.xml
+	SqlServerConfiguration-Help.xml
 	#>
 
 	[System.Diagnostics.DebuggerStepThrough()]
@@ -991,9 +1575,11 @@ function Disable-SqlServerProtocol {
 			}
 		}
 		catch {
-			if (Test-Path -Path Variable:\SmoServer) {
-				if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-					Disconnect-SmoServer -SmoServerObject $SmoServer
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
 				}
 			}
 
@@ -1049,7 +1635,7 @@ function Disable-SqlServerProtocol {
 function Enable-SqlConnectionEncryption {
 	<#
 	.EXTERNALHELP
-	SqlServerConfiguration-help.xml
+	SqlServerConfiguration-Help.xml
 	#>
 
 	[System.Diagnostics.DebuggerStepThrough()]
@@ -1122,9 +1708,11 @@ function Enable-SqlConnectionEncryption {
 			$PSSession = New-PSSession -ComputerName $SmoServer.NetName
 		}
 		catch {
-			if (Test-Path -Path Variable:\SmoServer) {
-				if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-					Disconnect-SmoServer -SmoServerObject $SmoServer
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
 				}
 			}
 
@@ -1142,6 +1730,15 @@ function Enable-SqlConnectionEncryption {
 
 	process {
 		try {
+			if ($SmoServer.NetName -notin @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+				throw [System.Management.Automation.ErrorRecord]::New(
+					[Exception]::New('Remote SQL Server instances are not supported.'),
+					'1',
+					[System.Management.Automation.ErrorCategory]::NotImplemented,
+					$Name
+				)
+			}
+
 			#Region Select Certificate
 			if ($PSBoundParameters.ContainsKey("CertificateThumbprint")) {
 				$CertificateParameters = @{
@@ -1208,15 +1805,17 @@ function Enable-SqlConnectionEncryption {
 			#Endregion
 
 			#Region Set Private Key Permissions
-			$AccessRuleParameters = @{
-				Certificate = $ValidCertificate
-				Grantee = $SmoSerer.ServiceAccount
-				FileSystemRights = 'Read'
-				AccessControlType = 'Allow'
-			}
+			foreach ($ServiceAccount in @($SmoServer.ServiceAccount, $SmoServer.JobServer.ServiceAccount)) {
+				$AccessRuleParameters = @{
+					Certificate = $ValidCertificate
+					Grantee = $ServiceAccount
+					FileSystemRights = 'Read'
+					AccessControlType = 'Allow'
+				}
 
-			if ($PSCmdlet.ShouldProcess($ValidCertificate.Subject, "Add private key access rule")) {
-				Add-CertificatePrivateKeyAccessRule @AccessRuleParameters
+				if ($PSCmdlet.ShouldProcess($ValidCertificate.Subject, "Add private key access rule")) {
+					Add-CertificatePrivateKeyAccessRule @AccessRuleParameters
+				}
 			}
 			#EndRegion
 
@@ -1227,18 +1826,18 @@ function Enable-SqlConnectionEncryption {
 			}
 
 			if ($RequireEncryption) {
-				$PropertyParameters.Add('ForceEncryption', $true)
+				$PropertyParameters.Add('RequireEncryption', $true)
 			}
 
 			if ($PSCmdlet.ShouldProcess($SmoServer.NetName, "Set encryption properties")) {
-				Set-SQLProtocolProperty @$PropertyParameters
+				Set-SQLProtocolProperty @PropertyParameters
 			}
 			#EndRegion
 
 			#Region Restart SQL Server Service
 			if ($ServiceRestart) {
 				if ($PSCmdlet.ShouldProcess($SmoServer.ServiceName, 'Restart SQL Server Service')) {
-					if ($SqlInstanceName -in @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+					if ($SmoServer.NetName -in @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
 						Restart-Service -Name $SmoServer.ServiceName -Force
 					} else {
 						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
@@ -1248,19 +1847,113 @@ function Enable-SqlConnectionEncryption {
 				Write-Warning "The Service $($SmoServer.ServiceName) must be restarted for the change to take effect."
 			}
 			#EndRegion
+
+			Write-Warning 'Legacy certificates used for connection encryption are not removed. Please review and remove any legacy certificates if necessary.'
 		}
 		catch {
 			throw $_
 		}
 		finally {
-			if ($null -ne $CimSession) {
-				Remove-CimSession -CimSession $CimSession
+			if (Test-Path -Path Variable:\CimSession) {
+				if ($null -ne $CimSession) {
+					Remove-CimSession -CimSession $CimSession
+				}
 			}
 
-			if ($null -ne $PSSession) {
-				Remove-PSSession -Session $PSSession
+			if (Test-Path -Path Variable:\PSSession) {
+				if ($null -ne $PSSession) {
+					Remove-PSSession -Session $PSSession
+				}
 			}
 
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Enable-SqlDatabaseMail {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'High',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([void])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$SmoServer.Configuration.DatabaseMailEnabled.ConfigValue = 1
+
+			if ($PSCmdlet.ShouldProcess($SmoServer.Name, 'Disable SQL Database Mail')) {
+				$SmoServer.Configuration.Alter()
+
+				$SmoServer.Refresh()
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
 				Disconnect-SmoServer -SmoServerObject $SmoServer
 			}
@@ -1274,7 +1967,7 @@ function Enable-SqlConnectionEncryption {
 function Enable-SqlServerProtocol {
 	<#
 	.EXTERNALHELP
-	SqlServerConfiguration-help.xml
+	SqlServerConfiguration-Help.xml
 	#>
 
 	[System.Diagnostics.DebuggerStepThrough()]
@@ -1339,9 +2032,11 @@ function Enable-SqlServerProtocol {
 			$PSSession = New-PSSession -ComputerName $SmoServer.NetName
 		}
 		catch {
-			if (Test-Path -Path Variable:\SmoServer) {
-				if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-					Disconnect-SmoServer -SmoServerObject $SmoServer
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
 				}
 			}
 
@@ -1394,10 +2089,527 @@ function Enable-SqlServerProtocol {
 	}
 }
 
+function Get-SqlDatabaseMailAccount {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $false,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([Microsoft.SqlServer.Management.Smo.Mail.MailAccount])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailAccountName
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			if ($PSBoundParameters.ContainsKey('MailAccountName')) {
+				$MailAccounts = $SmoServer.Mail.Accounts.Item($MailAccountName)
+			} else {
+				$MailAccounts = $SmoServer.Mail.Accounts
+			}
+
+			$MailAccounts
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Get-SqlDatabaseMailConfiguration {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $false,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([SqlServerConfiguration.SqlDatabaseMailConfiguration])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[DatabaseMailConfiguration]$MailConfigurationName
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			if ($PSBoundParameters.ContainsKey('MailConfigurationName')) {
+				$ConfigurationValues = $SmoServer.Mail.ConfigurationValues.Item($MailConfigurationName)
+			} else {
+				$ConfigurationValues = $SmoServer.Mail.ConfigurationValues
+			}
+
+			foreach ($ConfigurationValue in $ConfigurationValues) {
+				$SqlDatabaseMailConfiguration = [SqlServerConfiguration.SqlDatabaseMailConfiguration]::New($ConfigurationValue)
+
+				$SqlDatabaseMailConfiguration
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Get-SqlDatabaseMailProfile {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $false,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([Microsoft.SqlServer.Management.Smo.Mail.MailProfile])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailProfileName
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			if ($PSBoundParameters.ContainsKey('MailProfileName')) {
+				$SmoServer.Mail.Profiles.Item($MailProfileName)
+			} else {
+				$SmoServer.Mail.Profiles
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Get-SqlDatabaseMailProfileAccount {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $false,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([SqlServerConfiguration.SqlDatabaseMailProfilePrincipal])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailProfileName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$AccountName
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+
+			if ($PSBoundParameters.ContainsKey('AccountName')) {
+				$Accounts = $MailProfile.EnumAccounts().where({$_.AccountName -eq $AccountName})
+			} else {
+				$Accounts = $MailProfile.EnumAccounts()
+			}
+
+			foreach ($Account in $Accounts) {
+				$SqlDatabaseMailProfileAccount = [SqlServerConfiguration.SqlDatabaseMailProfileAccount]::New()
+
+				$SqlDatabaseMailProfileAccount.ProfileName = $MailProfile.Name
+				$SqlDatabaseMailProfileAccount.AccountName = $Account.AccountName
+				$SqlDatabaseMailProfileAccount.IsDefault = $Account.IsDefault
+
+				$SqlDatabaseMailProfileAccount
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Get-SqlDatabaseMailProfilePrincipal {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $false,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([SqlServerConfiguration.SqlDatabaseMailProfilePrincipal])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailProfileName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$PrincipalName
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+
+			if ($PSBoundParameters.ContainsKey('PrincipalName')) {
+				$Principals = $MailProfile.EnumPrincipals().where({$_.PrincipalName -eq $PrincipalName})
+			} else {
+				$Principals = $MailProfile.EnumPrincipals()
+			}
+
+			foreach ($Principal in $Principals) {
+				$SqlDatabaseMailProfilePrincipal = [SqlServerConfiguration.SqlDatabaseMailProfilePrincipal]::New()
+
+				$SqlDatabaseMailProfilePrincipal.ProfileName = $MailProfile.Name
+				$SqlDatabaseMailProfilePrincipal.PrincipalName = $Principal.PrincipalName
+				$SqlDatabaseMailProfilePrincipal.IsDefault = $Principal.IsDefault
+
+				$SqlDatabaseMailProfilePrincipal
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
 function Get-SqlProtocolProperty {
 	<#
 	.EXTERNALHELP
-	SqlServerConfiguration-help.xml
+	SqlServerConfiguration-Help.xml
 	#>
 
 	[System.Diagnostics.DebuggerStepThrough()]
@@ -1456,9 +2668,11 @@ function Get-SqlProtocolProperty {
 			}
 		}
 		catch {
-			if (Test-Path -Path Variable:\SmoServer) {
-				if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-					Disconnect-SmoServer -SmoServerObject $SmoServer
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
 				}
 			}
 
@@ -1520,7 +2734,7 @@ function Get-SqlProtocolProperty {
 function Get-SqlServerProtocol {
 	<#
 	.EXTERNALHELP
-	SqlServerConfiguration-help.xml
+	SqlServerConfiguration-Help.xml
 	#>
 
 	[System.Diagnostics.DebuggerStepThrough()]
@@ -1578,9 +2792,11 @@ function Get-SqlServerProtocol {
 			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
 		}
 		catch {
-			if (Test-Path -Path Variable:\SmoServer) {
-				if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-					Disconnect-SmoServer -SmoServerObject $SmoServer
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
 				}
 			}
 
@@ -1627,7 +2843,7 @@ function Get-SqlServerProtocol {
 function Get-SqlServerService {
 	<#
 	.EXTERNALHELP
-	SqlServerConfiguration-help.xml
+	SqlServerConfiguration-Help.xml
 	#>
 
 	[System.Diagnostics.DebuggerStepThrough()]
@@ -1685,9 +2901,11 @@ function Get-SqlServerService {
 			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
 		}
 		catch {
-			if (Test-Path -Path Variable:\SmoServer) {
-				if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-					Disconnect-SmoServer -SmoServerObject $SmoServer
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
 				}
 			}
 
@@ -1728,7 +2946,7 @@ function Get-SqlServerService {
 function Get-SqlServerStartupParameter {
 	<#
 	.EXTERNALHELP
-	SqlServerConfiguration-help.xml
+	SqlServerConfiguration-Help.xml
 	#>
 
 	[System.Diagnostics.DebuggerStepThrough()]
@@ -1779,9 +2997,11 @@ function Get-SqlServerStartupParameter {
 			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
 		}
 		catch {
-			if (Test-Path -Path Variable:\SmoServer) {
-				if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-					Disconnect-SmoServer -SmoServerObject $SmoServer
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
 				}
 			}
 
@@ -1821,10 +3041,509 @@ function Get-SqlServerStartupParameter {
 	}
 }
 
+function New-SqlDatabaseMailProfile {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([Microsoft.SqlServer.Management.Smo.Mail.MailProfile])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailProfileName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$Description
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$MailProfile = [Microsoft.SqlServer.Management.SMO.Mail.MailProfile]::New($SmoServer.Mail, $MailProfileName, $Description)
+
+			if ($PSCmdlet.ShouldProcess($MailProfileName, 'Create SQL DatabaseMailProfile')) {
+				$MailProfile.Create()
+
+				$MailProfile
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Remove-SqlDatabaseMailAccount {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([void])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailAccountName
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$MailAccount = Get-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName $MailAccountName
+
+			if ($PSCmdlet.ShouldProcess($MailAccountName, 'Remove SQL DatabaseMailAccount')) {
+				$MailAccount.Drop()
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Remove-SqlDatabaseMailProfile {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([void])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailProfileName
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+
+			if ($PSCmdlet.ShouldProcess($MailProfileName, 'Remove SQL DatabaseMailProfile')) {
+				$MailProfile.Drop()
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Remove-SqlDatabaseMailProfileAccount {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([void])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailProfileName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailAccountName
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+
+			$MailProfile.RemoveAccount($MailAccountName)
+
+			if ($PSCmdlet.ShouldProcess($MailAccountName, 'Remove SQL Database Mail Profile Account.')) {
+				$MailProfile.Alter()
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Remove-SqlDatabaseMailProfilePrincipal {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([void])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailProfileName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$PrincipalName
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+
+			$MailProfile.RemovePrincipal($PrincipalName)
+
+			if ($PSCmdlet.ShouldProcess($PrincipalName, 'Remove SQL Database Mail Profile Principal.')) {
+				$MailProfile.Alter()
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
 function Remove-SqlServerStartupParameter {
 	<#
 	.EXTERNALHELP
-	SqlServerConfiguration-help.xml
+	SqlServerConfiguration-Help.xml
 	#>
 
 	[System.Diagnostics.DebuggerStepThrough()]
@@ -1916,9 +3635,11 @@ function Remove-SqlServerStartupParameter {
 			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
 		}
 		catch {
-			if (Test-Path -Path Variable:\SmoServer) {
-				if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-					Disconnect-SmoServer -SmoServerObject $SmoServer
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
 				}
 			}
 
@@ -1989,10 +3710,465 @@ function Remove-SqlServerStartupParameter {
 	}
 }
 
+function Set-SqlDatabaseMailAccount {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'High',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([void])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailAccountName,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$NewMailAccountName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$Description,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$EmailDisplayName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$EmailAddress,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$ReplyToAddress,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$SmtpServerName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[int]$SmtpServerPort,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[boolean]$UseSslConnection,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[SMTPAuthenticationType]$SMTPAuthenticationType,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[PSCredential]$Credential
+	)
+
+	begin {
+		$ServerInstanceParameterSets = @('ServerInstance')
+
+		try {
+			if ($SMTPAuthenticationType -in @('Anonymous', 'Windows')) {
+				if ($PSBoundParameters.ContainsKey('Credential')) {
+					throw [System.Management.Automation.ErrorRecord]::New(
+						[Exception]::New('Credential parameter is invalid when SMTPAuthenticationType is Anonymous or Windows.'),
+						'1',
+						[System.Management.Automation.ErrorCategory]::InvalidArgument,
+						$SMTPAuthenticationType
+					)
+				}
+			} else {
+				if (-not $PSBoundParameters.ContainsKey('Credential')) {
+					throw [System.Management.Automation.ErrorRecord]::New(
+						[Exception]::New('Credential parameter is required when SMTPAuthenticationType is Basic.'),
+						'1',
+						[System.Management.Automation.ErrorCategory]::InvalidArgument,
+						$SMTPAuthenticationType
+					)
+				}
+			}
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$MailAccount = Get-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName $MailAccountName
+
+			if ($PSBoundParameters.ContainsKey('NewMailAccountName')) {
+				$MailAccount.Rename($NewMailAccountName)
+			}
+
+			if ($PSBoundParameters.ContainsKey('Description')) {
+				$MailAccount.Description = $Description
+			}
+
+			if ($PSBoundParameters.ContainsKey('EmailDisplayName')) {
+				$MailAccount.EmailDisplayName = $EmailDisplayName
+			}
+
+			if ($PSBoundParameters.ContainsKey('EmailAddress')) {
+				$MailAccount.EmailAddress = $EmailAddress
+			}
+
+			if ($PSBoundParameters.ContainsKey('ReplyToAddress')) {
+				$MailAccount.ReplyToAddress = $ReplyToAddress
+			}
+
+			$MailServer = $MailAccount.MailServers[0]
+
+			if ($PSBoundParameters.ContainsKey('SmtpServerName')) {
+				$MailServer.Rename($SmtpServerName)
+			}
+
+			if ($PSBoundParameters.ContainsKey('SmtpServerPort')) {
+				$MailServer.Port = $SmtpServerPort
+			}
+
+			if ($PSBoundParameters.ContainsKey('UseSslConnection')) {
+				$MailServer.UseSSLConnection = $UseSslConnection
+			}
+
+			switch ($SMTPAuthenticationType) {
+				'Anonymous' {
+					$MailServer.UseDefaultCredentials = $false
+					$MailServer.SetAccount('', '')
+				}
+				'Windows' {
+					$MailServer.UseDefaultCredentials = $true
+				}
+				'Basic' {
+					$MailServer.UseDefaultCredentials = $false
+					$MailServer.SetAccount($Credential.UserName, $Credential.Password)
+				}
+			}
+
+			if ($PSCmdlet.ShouldProcess($MailAccountName, 'Add SQL DatabaseMailAccount')) {
+				$MailAccount.Alter()
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Set-SqlDatabaseMailConfiguration {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $false,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([SqlServerConfiguration.SqlDatabaseMailConfiguration])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[DatabaseMailConfiguration]$MailConfigurationName,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$MailConfigurationValue
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$ConfigurationValues = $SmoServer.Mail.ConfigurationValues.Item($MailConfigurationName)
+
+			$ConfigurationValues.Value = $MailConfigurationValue
+
+
+			$ConfigurationValues.Alter()
+			$SmoServer.Mail.Refresh()
+
+			Get-SqlDatabaseMailConfiguration -SmoServerObject $SmoServer -MailConfigurationName $MailConfigurationName
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
+function Set-SqlDatabaseMailProfile {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $false,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([Microsoft.SqlServer.Management.Smo.Mail.MailProfile])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$MailProfileName,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateLength(1,128)]
+		[string]$NewMailProfileName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$Description
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+
+			if ($PSBoundParameters.ContainsKey('NewMailProfileName')) {
+				$MailProfile.Rename($NewMailProfileName)
+			}
+
+			if ($PSBoundParameters.ContainsKey('Description')) {
+				$MailProfile.Description = $Description
+			}
+
+			$MailProfile.Alter()
+			$SmoServer.Mail.Refresh()
+
+			Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $NewMailProfileName
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
 function Set-SqlProtocolProperty {
 	<#
 	.EXTERNALHELP
-	SqlServerConfiguration-help.xml
+	SqlServerConfiguration-Help.xml
 	#>
 
 	[System.Diagnostics.DebuggerStepThrough()]
@@ -2112,9 +4288,11 @@ function Set-SqlProtocolProperty {
 			}
 		}
 		catch {
-			if (Test-Path -Path Variable:\SmoServer) {
-				if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-					Disconnect-SmoServer -SmoServerObject $SmoServer
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
 				}
 			}
 
@@ -2245,7 +4423,7 @@ function Set-SqlProtocolProperty {
 function Set-SqlServerStartupParameter {
 	<#
 	.EXTERNALHELP
-	SqlServerConfiguration-help.xml
+	SqlServerConfiguration-Help.xml
 	#>
 
 	[System.Diagnostics.DebuggerStepThrough()]
@@ -2328,9 +4506,11 @@ function Set-SqlServerStartupParameter {
 			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
 		}
 		catch {
-			if (Test-Path -Path Variable:\SmoServer) {
-				if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-					Disconnect-SmoServer -SmoServerObject $SmoServer
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
 				}
 			}
 

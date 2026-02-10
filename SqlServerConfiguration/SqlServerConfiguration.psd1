@@ -4,7 +4,7 @@
 RootModule = 'SqlServerConfiguration.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.0.0'
+ModuleVersion = '1.1.0.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core', 'Desktop')
@@ -44,7 +44,7 @@ PowerShellVersion = '5.1'
 
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
-	@{ModuleName="SqlServerTools"; ModuleVersion="3.6.0.0"; GUID="0dbb8289-ae5b-4633-afc8-dfaf0acbe06c"}
+	@{ModuleName="SqlServerTools"; ModuleVersion="3.6.3.0"; GUID="0dbb8289-ae5b-4633-afc8-dfaf0acbe06c"}
 )
 
 # Assemblies that must be loaded prior to importing this module
@@ -68,16 +68,34 @@ FormatsToProcess = @(
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
+	'Add-SqlDatabaseMailAccount',
+	'Add-SqlDatabaseMailProfileAccount',
+	'Add-SqlDatabaseMailProfilePrincipal',
 	'Add-SqlServerStartupParameter',
 	'Connect-SmoWmiManagedComputer',
+	'Disable-SqlDatabaseMail',
 	'Disable-SqlServerProtocol',
 	'Enable-SqlConnectionEncryption',
+	'Enable-SqlDatabaseMail',
 	'Enable-SqlServerProtocol',
+	'Get-SqlDatabaseMailAccount',
+	'Get-SqlDatabaseMailConfiguration',
+	'Get-SqlDatabaseMailProfile',
+	'Get-SqlDatabaseMailProfileAccount',
+	'Get-SqlDatabaseMailProfilePrincipal',
 	'Get-SqlServerProtocol',
 	'Get-SqlProtocolProperty',
 	'Get-SqlServerService',
 	'Get-SqlServerStartupParameter',
+	'New-SqlDatabaseMailProfile',
+	'Remove-SqlDatabaseMailAccount',
+	'Remove-SqlDatabaseMailProfile',
+	'Remove-SqlDatabaseMailProfileAccount',
+	'Remove-SqlDatabaseMailProfilePrincipal',
 	'Remove-SqlServerStartupParameter',
+	'Set-SqlDatabaseMailAccount',
+	'Set-SqlDatabaseMailConfiguration',
+	'Set-SqlDatabaseMailProfile',
 	'Set-SqlProtocolProperty'
 	'Set-SqlServerStartupParameter'
 )
@@ -126,7 +144,7 @@ PrivateData = @{
 		Future Development
 			* SQL Server Service Properties
 				* Enable Filestream
-				* Enable AlwaysOn
+				* Enable AlwaysOn ($WmiManagedComputer.Services.IsHadrEnabled)
 				* Advanced Properties
 			* Ability to configure network protocols.
 		'

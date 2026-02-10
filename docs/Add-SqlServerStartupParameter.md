@@ -1,6 +1,6 @@
 ---
 document type: cmdlet
-external help file: SqlServerConfiguration-help.xml
+external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
@@ -50,21 +50,24 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-Add startup parameter to SQL Server.
+Adds SQL Server startup parameter to SQL Server instance.
 
 ## EXAMPLES
 
 ### Example 1
 
+```powershell
 Add-SqlServerStartupParameter -ServerInstance MyServer -Name TraceFlag -Value 1234
+```
 
 Adds trace flag 1234 on MyServer.
 
 ### Example 2
 
+```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-
 Add-SqlServerStartupParameter -SmoServerObject $SmoServer -Name TraceFlag -Value 1234
+```
 
 Adds trace flag 1234 using the specified Smo session.
 
@@ -115,7 +118,7 @@ HelpMessage: ''
 
 ### -ServerInstance
 
-SQL Server host name and instance name.
+The name of the SQL Server instance to connect to.
 
 ```yaml
 Type: System.String
@@ -136,7 +139,7 @@ HelpMessage: ''
 
 ### -ServiceRestart
 
-Restart SQL Server service.
+Restart the SQL Server service after making changes.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -157,7 +160,7 @@ HelpMessage: ''
 
 ### -SmoServerObject
 
-SMO Server object
+An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server

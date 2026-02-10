@@ -1,30 +1,27 @@
----
+﻿---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 01/26/2026
 PlatyPS schema version: 2024-05-01
-title: Remove-SqlServerStartupParameter
+title: Disable-SqlDatabaseMail
 ---
 
-# Remove-SqlServerStartupParameter
+# Disable-SqlDatabaseMail
 
 ## SYNOPSIS
 
-Removes a startup parameter from a SQL Server instance.
+Disables Database Mail.
 
 ## SYNTAX
 
 ### ServerInstance (Default)
 
 ```
-Remove-SqlServerStartupParameter
+Disable-SqlDatabaseMail
   -ServerInstance <string>
-  -Name <StartupParameter>
-  [-Value <string>]
-  [-ServiceRestart]
   [-WhatIf]
   [-Confirm]
   [<CommonParameters>]
@@ -33,11 +30,8 @@ Remove-SqlServerStartupParameter
 ### SmoServerObject
 
 ```
-Remove-SqlServerStartupParameter
+Disable-SqlDatabaseMail
   -SmoServerObject <Server>
-  -Name <StartupParameter>
-  [-Value <string>]
-  [-ServiceRestart]
   [-WhatIf]
   [-Confirm]
   [<CommonParameters>]
@@ -50,26 +44,27 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-Removes a startup parameter from a SQL Server instance.
+Disables Database Mail on a SQL Server instance.
 
 ## EXAMPLES
 
 ### Example 1
 
 ```powershell
-Remove-SqlServerStartupParameter -ServerInstance MyServer -Name TraceFlag -Value 1234
+Disable-SqlDatabaseMail -ServerInstance MyServer
 ```
 
-Removes SQL Server Trace Flag 1234 startup parameter from MyServer.
+Disables Database Mail on the specified SQL Server instance.
+
 
 ### Example 2
 
 ```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-Remove-SqlServerStartupParameter -SmoServerObject $SmoServer -Name TraceFlag -Value 1234
+Disable-SqlDatabaseMail -SmoServerObject $SmoServer
 ```
 
-Removes SQL Server Trace Flag 1234 startup parameter using the SMO session.
+Disables Database Mail on the specified SQL Server instance using the SmoServer session.
 
 ## PARAMETERS
 
@@ -79,7 +74,7 @@ Prompts you for confirmation before running the cmdlet.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
+DefaultValue: ''
 SupportsWildcards: false
 Aliases:
 - cf
@@ -95,34 +90,13 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -Name
-
-The name of the startup parameter to remove.
-
-```yaml
-Type: SqlServerConfiguration.StartupParameter
-DefaultValue: None
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### -ServerInstance
 
 The name of the SQL Server instance to connect to.
 
 ```yaml
 Type: System.String
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -137,34 +111,13 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -ServiceRestart
-
-Restart the SQL Server service after making changes.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### -SmoServerObject
 
 An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -179,35 +132,13 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -Value
-
-The value of the startup parameter to remove (required when Name is 'TraceFlag').
-
-```yaml
-Type: System.String
-DefaultValue: None
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs.
-The cmdlet is not run.
+Runs the command in a mode that only reports what would happen without performing the actions.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
-DefaultValue: False
+DefaultValue: ''
 SupportsWildcards: false
 Aliases:
 - wi
@@ -242,8 +173,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 
 
-
 ## RELATED LINKS
 
-None.
+None
 

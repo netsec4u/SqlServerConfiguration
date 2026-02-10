@@ -1,35 +1,37 @@
----
+﻿---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 01/26/2026
 PlatyPS schema version: 2024-05-01
-title: Get-SqlServerStartupParameter
+title: Get-SqlDatabaseMailAccount
 ---
 
-# Get-SqlServerStartupParameter
+# Get-SqlDatabaseMailAccount
 
 ## SYNOPSIS
 
-Retrieves the SQL Server startup parameters for a specified SQL Server instance.
+Retrieves SQL Database Mail Accounts from a SQL Server instance.
 
 ## SYNTAX
 
 ### ServerInstance (Default)
 
 ```
-Get-SqlServerStartupParameter
+Get-SqlDatabaseMailAccount
   -ServerInstance <string>
+  [-MailAccountName <string>]
   [<CommonParameters>]
 ```
 
 ### SmoServerObject
 
 ```
-Get-SqlServerStartupParameter
+Get-SqlDatabaseMailAccount
   -SmoServerObject <Server>
+  [-MailAccountName <string>]
   [<CommonParameters>]
 ```
 
@@ -40,29 +42,51 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-This cmdlet connects to a specified SQL Server instance and retrieves its startup parameters.
-It can accept either a server instance name or an SMO Server object.
+Retrieves SQL Database Mail Accounts from a specified SQL Server instance or SMO Server object.
+You can optionally filter the results by specifying a Mail Account Name.
 
 ## EXAMPLES
 
 ### Example 1
 
 ```powershell
-Get-SqlServerStartupParameter -ServerInstance MyServer
+Get-SqlDatabaseMailAccount -ServerInstance "MyServer" -MailAccountName "MyMailAccount"
 ```
 
-Gets SQL Server startup parameters from MyServer.
+Retrieves the specified Database Mail account from the SQL Server instance "MyServer".
 
 ### Example 2
 
 ```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-Get-SqlServerStartupParameter -SmoServerObject $SmoServer
+Get-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName "MyMailAccount"
 ```
 
-Gets SQL Server startup parameters using SMO server session.
+Retrieves the specified Database Mail account from the SQL Server instance using the SmoServer session.
 
 ## PARAMETERS
+
+### -MailAccountName
+
+The name of the Mail Account to retrieve.
+If not specified, all Mail Accounts will be returned.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
 ### -ServerInstance
 
@@ -70,7 +94,7 @@ The name of the SQL Server instance to connect to.
 
 ```yaml
 Type: System.String
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -91,7 +115,7 @@ An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -117,16 +141,15 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-### SqlServerConfiguration.SqlStartupParameter
+### Microsoft.SqlServer.Management.Smo.Mail.MailAccount
 
 
 
 ## NOTES
 
-https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/database-engine-service-startup-options?view=sql-server-ver16
 
 
 ## RELATED LINKS
 
-None.
+None
 

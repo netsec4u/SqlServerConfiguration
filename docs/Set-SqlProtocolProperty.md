@@ -1,6 +1,6 @@
 ---
 document type: cmdlet
-external help file: SqlServerConfiguration-help.xml
+external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
@@ -13,7 +13,7 @@ title: Set-SqlProtocolProperty
 
 ## SYNOPSIS
 
-Sets SQL protocol property settings.
+Set properties for SQL Server network protocols.
 
 ## SYNTAX
 
@@ -56,21 +56,24 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-Sets SQL protocol property settings.
+Sets properties for SQL Server network protocols such as SSL encryption, instance visibility, and extended protection.
 
 ## EXAMPLES
 
 ### Example 1
 
+```powershell
 Set-SqlProtocolProperty -ServerInstance MyServer -HideInstance $true
+```
 
 Sets protocol property HideInstance on server MyServer.
 
 ### Example 2
 
+```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-
 Set-SqlProtocolProperty -SmoServerObject $SmoServer -HideInstance $true
+```
 
 Sets protocol property HideInstance using SMO session.
 
@@ -78,7 +81,7 @@ Sets protocol property HideInstance using SMO session.
 
 ### -CertificateThumbprint
 
-Specifies certificate thumbprint.
+The thumbprint of the certificate to use for SSL encryption.
 
 ```yaml
 Type: System.Object
@@ -121,7 +124,7 @@ HelpMessage: ''
 
 ### -ExtendedProtection
 
-Specifies to enable/disable extended protection.
+Specifies whether extended protection is enabled for connections.
 
 ```yaml
 Type: System.Boolean
@@ -142,7 +145,7 @@ HelpMessage: ''
 
 ### -HideInstance
 
-Specifies to enable/disable hide instance.
+Specifies whether the SQL Server instance is hidden from the network.
 
 ```yaml
 Type: System.Boolean
@@ -163,7 +166,7 @@ HelpMessage: ''
 
 ### -RequireEncryption
 
-Specifies enable/disable encryption requirement.
+Specifies whether encryption is required for connections.
 
 ```yaml
 Type: System.Boolean
@@ -184,7 +187,7 @@ HelpMessage: ''
 
 ### -RequireStrictEncryption
 
-Specifies enable/disable strict encryption requirement.
+Specifies whether strict encryption is required for connections.
 
 ```yaml
 Type: System.Boolean
@@ -205,7 +208,7 @@ HelpMessage: ''
 
 ### -ServerInstance
 
-SQL Server host name and instance name.
+The name of the SQL Server instance to connect to.
 
 ```yaml
 Type: System.String
@@ -226,7 +229,7 @@ HelpMessage: ''
 
 ### -ServiceRestart
 
-Restart SQL Server service.
+Restart the SQL Server service after making changes.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -247,7 +250,7 @@ HelpMessage: ''
 
 ### -SmoServerObject
 
-SMO Server object
+An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server

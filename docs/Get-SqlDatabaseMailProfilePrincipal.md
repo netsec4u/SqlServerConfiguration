@@ -1,37 +1,39 @@
----
+﻿---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 01/26/2026
 PlatyPS schema version: 2024-05-01
-title: Get-SqlServerService
+title: Get-SqlDatabaseMailProfilePrincipal
 ---
 
-# Get-SqlServerService
+# Get-SqlDatabaseMailProfilePrincipal
 
 ## SYNOPSIS
 
-Retrieves SQL Server services and their properties.
+Get the principals associated with a Database Mail profile.
 
 ## SYNTAX
 
 ### ServerInstance (Default)
 
 ```
-Get-SqlServerService
+Get-SqlDatabaseMailProfilePrincipal
   -ServerInstance <string>
-  [-ServiceName <string>]
+  -MailProfileName <string>
+  [-PrincipalName <string>]
   [<CommonParameters>]
 ```
 
 ### SmoServerObject
 
 ```
-Get-SqlServerService
+Get-SqlDatabaseMailProfilePrincipal
   -SmoServerObject <Server>
-  [-ServiceName <string>]
+  -MailProfileName <string>
+  [-PrincipalName <string>]
   [<CommonParameters>]
 ```
 
@@ -42,40 +44,40 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-This cmdlet connects to a specified SQL Server instance and retrieves information about its services, including their status and configuration.
+Retrieves the principals (users or roles) that have access to a specified Database Mail profile on a SQL Server instance.
 
 ## EXAMPLES
 
 ### Example 1
 
 ```powershell
-Get-SqlServerService -ServerInstance MyServer
+Get-SqlDatabaseMailProfilePrincipal -ServerInstance "MyServer" -MailProfileName "MyProfile"
 ```
 
-Gets SQL Services from MyServer.
+Retrieves all principals for the specified Database Mail profile on the specified SQL Server instance.
 
 ### Example 2
 
 ```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-Get-SqlServerService -SmoServerObject $SmoServer
+Get-SqlDatabaseMailProfilePrincipal -ServerInstance "MyServer" -MailProfileName "MyProfile"
 ```
 
-Gets SQL Services using SMO Server session.
+Retrieves all principals for the specified Database Mail profile using the SmoServer session.
 
 ## PARAMETERS
 
-### -ServerInstance
+### -MailProfileName
 
-SQL Server host name and instance name.
+The name of the Database Mail profile for which to retrieve principals.
 
 ```yaml
 Type: System.String
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: ServerInstance
+- Name: (All)
   Position: Named
   IsRequired: true
   ValueFromPipeline: false
@@ -86,13 +88,14 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -ServiceName
+### -PrincipalName
 
-The name of the SQL Server instance to connect to.
+The name of a specific principal to filter the results.
+If not provided, all principals associated with the profile will be returned.
 
 ```yaml
 Type: System.String
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -107,13 +110,34 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -ServerInstance
+
+The name of the SQL Server instance to connect to.
+
+```yaml
+Type: System.String
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ServerInstance
+  Position: Named
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### -SmoServerObject
 
 An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -139,7 +163,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-### Microsoft.SqlServer.Management.Smo.Wmi.ServerProtocol
+### SqlServerConfiguration.SqlDatabaseMailProfilePrincipal
 
 
 
@@ -147,8 +171,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 
 
-
 ## RELATED LINKS
 
-None.
+None
 
