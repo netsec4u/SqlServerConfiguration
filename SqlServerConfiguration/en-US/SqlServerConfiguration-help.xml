@@ -2529,6 +2529,102 @@ Get-SqlDatabaseMailProfilePrincipal -ServerInstance "MyServer" -MailProfileName 
   </command:command>
   <command:command>
     <command:details>
+      <command:name>Get-SqlFilestreamSetting</command:name>
+      <maml:description>
+        <maml:para>Gets the FILESTREAM configuration settings of a SQL Server instance.</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>SqlFilestreamSetting</command:noun>
+    </command:details>
+    <maml:description>
+      <maml:para>Returns the FILESTREAM configuration settings of a SQL Server instance, including the access level and share name.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-SqlFilestreamSetting
+</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>ServerInstance</maml:name>
+          <maml:description>
+            <maml:para>SQL Server host name and instance name.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Get-SqlFilestreamSetting
+</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>SmoServerObject</maml:name>
+          <maml:description>
+            <maml:para>An existing SMO Server object representing the SQL Server instance.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="true">Microsoft.SqlServer.Management.Smo.Server</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>ServerInstance</maml:name>
+        <maml:description>
+          <maml:para>SQL Server host name and instance name.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>SmoServerObject</maml:name>
+        <maml:description>
+          <maml:para>An existing SMO Server object representing the SQL Server instance.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">Microsoft.SqlServer.Management.Smo.Server</command:parameterValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <dev:name>SqlServerConfiguration.SqlFilestreamSettings</dev:name>
+        </dev:type>
+        <maml:description>
+          <maml:para />
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para />
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>--------- Example 1 ---------</maml:title>
+        <maml:introduction>
+        </maml:introduction>
+        <dev:code>Get-SqlFilestreamSetting -ServerInstance MyServer</dev:code>
+        <dev:remarks>
+          <maml:para>Returns the FILESTREAM settings of the SQL Server instance named.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>--------- Example 2 ---------</maml:title>
+        <maml:introduction>
+        </maml:introduction>
+        <dev:code>$SmoServer = Connect-SmoServer -ServerInstance MyServer
+Get-SqlFilestreamSetting -SmoServerObject $SmoServer</dev:code>
+        <dev:remarks>
+          <maml:para>Returns the FILESTREAM settings of the SQL Server using SMO session.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version</maml:linkText>
+        <command:uri />
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command>
+    <command:details>
       <command:name>Get-SqlProtocolProperty</command:name>
       <maml:description>
         <maml:para>Retrieves the protocol properties for a SQL Server instance.</maml:para>
@@ -4672,6 +4768,207 @@ Set-SqlDatabaseMailConfiguration -SmoServerObject $SmoServer -MailConfigurationN
 Set-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName "OldProfileName" -NewMailProfileName "NewProfileName" -Description "Updated description for the mail profile."</dev:code>
         <dev:remarks>
           <maml:para>Sets the name and description of an existing SQL Database Mail profile using the SmoServer session.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version</maml:linkText>
+        <command:uri />
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command>
+    <command:details>
+      <command:name>Set-SqlFilestreamSetting</command:name>
+      <maml:description>
+        <maml:para>Sets the FILESTREAM configuration settings of a SQL Server instance.</maml:para>
+      </maml:description>
+      <command:verb>Set</command:verb>
+      <command:noun>SqlFilestreamSetting</command:noun>
+    </command:details>
+    <maml:description>
+      <maml:para>Sets the FILESTREAM configuration settings of a SQL Server instance, including the access level and share name.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Set-SqlFilestreamSetting
+</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>AccessLevel</maml:name>
+          <maml:description>
+            <maml:para>The access level for the FILESTREAM configuration.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="true">System.UInt32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts you for confirmation before running the cmdlet.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>ServerInstance</maml:name>
+          <maml:description>
+            <maml:para>SQL Server host name and instance name.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>ServiceRestart</maml:name>
+          <maml:description>
+            <maml:para>Indicates whether to restart the SQL Server service after setting the FILESTREAM settings.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>ShareName</maml:name>
+          <maml:description>
+            <maml:para>The name of the share for the FILESTREAM configuration.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Set-SqlFilestreamSetting
+</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>AccessLevel</maml:name>
+          <maml:description>
+            <maml:para>The access level for the FILESTREAM configuration.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="true">System.UInt32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts you for confirmation before running the cmdlet.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>ServiceRestart</maml:name>
+          <maml:description>
+            <maml:para>Indicates whether to restart the SQL Server service after setting the FILESTREAM settings.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>ShareName</maml:name>
+          <maml:description>
+            <maml:para>The name of the share for the FILESTREAM configuration.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>SmoServerObject</maml:name>
+          <maml:description>
+            <maml:para>An existing SMO Server object representing the SQL Server instance.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="true">Microsoft.SqlServer.Management.Smo.Server</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>AccessLevel</maml:name>
+        <maml:description>
+          <maml:para>The access level for the FILESTREAM configuration.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.UInt32</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>Prompts you for confirmation before running the cmdlet.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>ServerInstance</maml:name>
+        <maml:description>
+          <maml:para>SQL Server host name and instance name.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>ServiceRestart</maml:name>
+        <maml:description>
+          <maml:para>Indicates whether to restart the SQL Server service after setting the FILESTREAM settings.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>ShareName</maml:name>
+        <maml:description>
+          <maml:para>The name of the share for the FILESTREAM configuration.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="true">System.String</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>SmoServerObject</maml:name>
+        <maml:description>
+          <maml:para>An existing SMO Server object representing the SQL Server instance.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">Microsoft.SqlServer.Management.Smo.Server</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <dev:name>SqlServerConfiguration.SqlFilestreamSettings</dev:name>
+        </dev:type>
+        <maml:description>
+          <maml:para />
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para />
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>--------- Example 1 ---------</maml:title>
+        <maml:introduction>
+        </maml:introduction>
+        <dev:code>Set-SqlFilestreamSetting -ServerInstance MyServer -AccessLevel 3</dev:code>
+        <dev:remarks>
+          <maml:para>Sets the FILESTREAM settings of the SQL Server instance with an access level of 3.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>--------- Example 2 ---------</maml:title>
+        <maml:introduction>
+        </maml:introduction>
+        <dev:code>$SmoServer = Connect-SmoServer -ServerInstance MyServer
+Set-SqlFilestreamSetting -SmoServerObject $SmoServer -AccessLevel 3</dev:code>
+        <dev:remarks>
+          <maml:para>Sets the FILESTREAM settings of the SQL Server instance with an access level of 3 using an existing SMO Server object.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

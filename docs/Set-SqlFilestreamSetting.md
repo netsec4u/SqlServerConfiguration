@@ -4,26 +4,26 @@ external help file: SqlServerConfiguration-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 01/26/2026
+ms.date: 02/13/2026
 PlatyPS schema version: 2024-05-01
-title: Enable-SqlConnectionEncryption
+title: Set-SqlFilestreamSetting
 ---
 
-# Enable-SqlConnectionEncryption
+# Set-SqlFilestreamSetting
 
 ## SYNOPSIS
 
-Enables SQL Server Connection Encryption.
+Sets the FILESTREAM configuration settings of a SQL Server instance.
 
 ## SYNTAX
 
 ### ServerInstance (Default)
 
 ```
-Enable-SqlConnectionEncryption
+Set-SqlFilestreamSetting
   -ServerInstance <string>
-  [-CertificateThumbprint <string>]
-  [-RequireEncryption]
+  -AccessLevel <uint>
+  [-ShareName <string>]
   [-ServiceRestart]
   [-WhatIf]
   [-Confirm]
@@ -33,10 +33,10 @@ Enable-SqlConnectionEncryption
 ### SmoServerObject
 
 ```
-Enable-SqlConnectionEncryption
+Set-SqlFilestreamSetting
   -SmoServerObject <Server>
-  [-CertificateThumbprint <string>]
-  [-RequireEncryption]
+  -AccessLevel <uint>
+  [-ShareName <string>]
   [-ServiceRestart]
   [-WhatIf]
   [-Confirm]
@@ -50,42 +50,42 @@ This cmdlet has the following aliases:
 
 ## DESCRIPTION
 
-Enables SQL Server Connection Encryption for a specified SQL Server instance.
+Sets the FILESTREAM configuration settings of a SQL Server instance, including the access level and share name.
 
 ## EXAMPLES
 
 ### Example 1
 
 ```powershell
-Enable-SqlConnectionEncryption -ServerInstance 'MyServer' -CertificateThumbprint '761f1ef0dd91880af2d3cadd571b734b89eb3fa3' -ServiceRestart
+Set-SqlFilestreamSetting -ServerInstance MyServer -AccessLevel 3
 ```
 
-Enable encryption for connections to the specified SQL Server instance using the specified certificate thumbprint and restart the SQL Server service.
+Sets the FILESTREAM settings of the SQL Server instance with an access level of 3.
 
 ### Example 2
 
 ```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-Enable-SqlConnectionEncryption -SmoServerObject $SmoServer -CertificateThumbprint '761f1ef0dd91880af2d3cadd571b734b89eb3fa3' -ServiceRestart
+Set-SqlFilestreamSetting -SmoServerObject $SmoServer -AccessLevel 3
 ```
 
-Enable encryption for connections to the specified SQL Server instance using the specified certificate thumbprint and restart the SQL Server service using the SmoServer session.
+Sets the FILESTREAM settings of the SQL Server instance with an access level of 3 using an existing SMO Server object.
 
 ## PARAMETERS
 
-### -CertificateThumbprint
+### -AccessLevel
 
-Specifies certificate thumbprint.
+The access level for the FILESTREAM configuration.
 
 ```yaml
-Type: System.String
+Type: System.UInt32
 DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
 - Name: (All)
   Position: Named
-  IsRequired: false
+  IsRequired: true
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
   ValueFromRemainingArguments: false
@@ -116,30 +116,9 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -RequireEncryption
-
-Specifies encryption requirement.
-
-```yaml
-Type: System.Management.Automation.SwitchParameter
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### -ServerInstance
 
-The name of the SQL Server instance to connect to.
+SQL Server host name and instance name.
 
 ```yaml
 Type: System.String
@@ -160,10 +139,31 @@ HelpMessage: ''
 
 ### -ServiceRestart
 
-Restart the SQL Server service after making changes.
+Indicates whether to restart the SQL Server service after setting the FILESTREAM settings.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -ShareName
+
+The name of the share for the FILESTREAM configuration.
+
+```yaml
+Type: System.String
 DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
@@ -202,8 +202,7 @@ HelpMessage: ''
 
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs.
-The cmdlet is not run.
+Runs the command in a mode that only reports what would happen without performing the actions.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -234,7 +233,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-### System.Void
+### SqlServerConfiguration.SqlFilestreamSettings
 
 
 
@@ -242,8 +241,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 
 
-
 ## RELATED LINKS
 
-None
+
 

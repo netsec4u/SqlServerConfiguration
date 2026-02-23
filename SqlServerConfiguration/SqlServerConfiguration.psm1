@@ -78,6 +78,38 @@ namespace SqlServerConfiguration
 		public bool IsDefault;
 	}
 
+	public class SqlFilestreamSettings
+	{
+		public uint AccessLevel { get; private set; }
+		public string AccessLevelDescription {
+			get {
+				switch (this.AccessLevel)
+				{
+					case 0:
+						return "Disabled";
+
+					case 1:
+						return "FileStream enabled for T-Sql access";
+
+					case 2:
+						return "FileStream enabled for T-Sql and IO streaming access";
+
+					case 3:
+						return "FileStream enabled for T-Sql, IO streaming, and remote clients";
+
+					default:
+						return "Unknown";
+				}
+			}
+		}
+		public string ShareName;
+
+		public SqlFilestreamSettings (uint AccessLevel)
+		{
+			this.AccessLevel = AccessLevel;
+		}
+	}
+
 	public class SqlProtocolProperty
 	{
 		public string CertificateThumbprint;
@@ -677,7 +709,7 @@ function Restart-RemoteService {
 	.PARAMETER ServiceName
 	Specifies the service name.
 	.EXAMPLE
-	$PSSession = New-PSSession -ComputerName asdf
+	$PSSession = New-PSSession -ComputerName MyServer
 
 	Restart-RemoteService -PSSession $PSSession -ServiceName 'MSSQLServer'
 	.NOTES
@@ -1337,6 +1369,12 @@ function Add-SqlServerStartupParameter {
 			}
 
 			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
+
+			if ($ServiceRestart) {
+				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				}
+			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $DatabaseNameParameterSets) {
@@ -1344,6 +1382,12 @@ function Add-SqlServerStartupParameter {
 					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
 						Disconnect-SmoServer -SmoServerObject $SmoServer
 					}
+				}
+			}
+
+			if (Test-Path -Path Variable:\PSSession) {
+				if ($PSSession -is [System.Management.Automation.Runspaces.PSSession]) {
+					Remove-PSSession -Session $PSSession
 				}
 			}
 
@@ -1393,7 +1437,7 @@ function Add-SqlServerStartupParameter {
 
 			if ($ServiceRestart) {
 				if ($PSCmdlet.ShouldProcess($SmoServer.NetName, 'Restart Service')) {
-					if ($SqlInstanceName -in @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
 						Restart-Service -Name $SmoServer.ServiceName -Force
 					} else {
 						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
@@ -1407,6 +1451,10 @@ function Add-SqlServerStartupParameter {
 			throw $_
 		}
 		finally {
+			if (Test-Path -Path Variable:\PSSession) {
+				Remove-PSSession -Session $PSSession
+			}
+
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
 				Disconnect-SmoServer -SmoServerObject $SmoServer
 			}
@@ -1571,7 +1619,9 @@ function Disable-SqlServerProtocol {
 			}
 
 			if ($ServiceRestart) {
-				$PSSession = New-PSSession -ComputerName $SmoServer.NetName
+				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				}
 			}
 		}
 		catch {
@@ -1604,7 +1654,7 @@ function Disable-SqlServerProtocol {
 
 			if ($ServiceRestart) {
 				if ($PSCmdlet.ShouldProcess($SmoServer.ServiceName, 'Restart SQL Server Service')) {
-					if ($SqlInstanceName -in @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
 						Restart-Service -Name $SmoServer.ServiceName -Force
 					} else {
 						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
@@ -1705,7 +1755,11 @@ function Enable-SqlConnectionEncryption {
 				$SmoServer = $SmoServerObject
 			}
 
-			$PSSession = New-PSSession -ComputerName $SmoServer.NetName
+			if ($ServiceRestart) {
+				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				}
+			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
@@ -1762,7 +1816,7 @@ function Enable-SqlConnectionEncryption {
 				}
 
 				if ($SmoServer.NetName -NotIn @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
-					$CimSessionParameters.Add('ComputerName', $SmoServer.NetName)
+					$CimSessionParameters.Add('ComputerName', $SmoServer.Information.FullyQualifiedNetName)
 				}
 
 				$CimSession = New-CimSession @CimSessionParameters
@@ -1837,7 +1891,7 @@ function Enable-SqlConnectionEncryption {
 			#Region Restart SQL Server Service
 			if ($ServiceRestart) {
 				if ($PSCmdlet.ShouldProcess($SmoServer.ServiceName, 'Restart SQL Server Service')) {
-					if ($SmoServer.NetName -in @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
 						Restart-Service -Name $SmoServer.ServiceName -Force
 					} else {
 						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
@@ -1855,13 +1909,13 @@ function Enable-SqlConnectionEncryption {
 		}
 		finally {
 			if (Test-Path -Path Variable:\CimSession) {
-				if ($null -ne $CimSession) {
+				if ($CimSession -is [Microsoft.Management.Infrastructure.CimSession]) {
 					Remove-CimSession -CimSession $CimSession
 				}
 			}
 
 			if (Test-Path -Path Variable:\PSSession) {
-				if ($null -ne $PSSession) {
+				if ($PSSession -is [System.Management.Automation.Runspaces.PSSession]) {
 					Remove-PSSession -Session $PSSession
 				}
 			}
@@ -2029,7 +2083,11 @@ function Enable-SqlServerProtocol {
 				$SmoServer = $SmoServerObject
 			}
 
-			$PSSession = New-PSSession -ComputerName $SmoServer.NetName
+			if ($ServiceRestart) {
+				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				}
+			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
@@ -2061,7 +2119,7 @@ function Enable-SqlServerProtocol {
 
 			if ($ServiceRestart) {
 				if ($PSCmdlet.ShouldProcess($SmoServer.ServiceName, 'Restart SQL Server Service')) {
-					if ($SqlInstanceName -in @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
 						Restart-Service -Name $SmoServer.ServiceName -Force
 					} else {
 						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
@@ -2473,7 +2531,7 @@ function Get-SqlDatabaseMailProfileAccount {
 
 				$SqlDatabaseMailProfileAccount.ProfileName = $MailProfile.Name
 				$SqlDatabaseMailProfileAccount.AccountName = $Account.AccountName
-				$SqlDatabaseMailProfileAccount.IsDefault = $Account.IsDefault
+				$SqlDatabaseMailProfileAccount.SequenceNumber = $Account.SequenceNumber
 
 				$SqlDatabaseMailProfileAccount
 			}
@@ -2606,6 +2664,126 @@ function Get-SqlDatabaseMailProfilePrincipal {
 	}
 }
 
+function Get-SqlFilestreamSetting {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $false,
+		ConfirmImpact = 'Low',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([SqlServerConfiguration.SqlFilestreamSettings])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+
+			$CimSessionParameters = @{
+				'Name' = 'FileStreamSettings'
+			}
+
+			if ($SmoServer.NetName -NotIn @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+				$CimSessionParameters.Add('ComputerName', $SmoServer.Information.FullyQualifiedNetName)
+			}
+
+			$CimSession = New-CimSession @CimSessionParameters
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			if (Test-Path -Path Variable:\CimSession) {
+				if ($CimSession -is [System.Management.Automation.Runspaces.PSSession]) {
+					Remove-CimSession -CimSession $CimSession
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$CimInstanceParameters = @{
+				CimSession  = $CimSession
+				Namespace = 'root\Microsoft\SQLServer'
+				Query = "SELECT NAME FROM __NAMESPACE WHERE NAME LIKE 'ComputerManagement%'"
+			}
+
+			$NameSpace = Get-CimInstance @CimInstanceParameters | Sort-Object -Property Name -Descending | Select-Object -First 1
+
+			$CimInstanceParameters = @{
+				CimSession  = $CimSession
+				Namespace = $("root\Microsoft\SQLServer\" + $Namespace.Name)
+				ClassName = 'FilestreamSettings'
+			}
+
+			$CimFilestreamSettings = Get-CimInstance @CimInstanceParameters
+
+			$SqlFilestreamSettings = [SqlServerConfiguration.SqlFilestreamSettings]::New($CimFilestreamSettings.AccessLevel)
+
+			$SqlFilestreamSettings.ShareName = $CimFilestreamSettings.ShareName
+
+			$SqlFilestreamSettings
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			Remove-CimSession -CimSession $CimSession
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
 function Get-SqlProtocolProperty {
 	<#
 	.EXTERNALHELP
@@ -2659,6 +2837,10 @@ function Get-SqlProtocolProperty {
 
 			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
 
+			if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
+				New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+			}
+
 			$RegistryPath = [string]::Format("HKLM:\{0}\MSSQLServer\SuperSocketNetLib", $SmoWmiManagedComputer.Services[$SmoServer.ServiceName].AdvancedProperties['REGROOT'].Value)
 
 			$ScriptBlock = {
@@ -2688,10 +2870,6 @@ function Get-SqlProtocolProperty {
 
 	process {
 		try {
-			if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-				$PSSession = New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
-			}
-
 			$CommandParameters = @{
 				ScriptBlock = $ScriptBlock
 				ArgumentList = @($RegistryPath)
@@ -4165,6 +4343,183 @@ function Set-SqlDatabaseMailProfile {
 	}
 }
 
+function Set-SqlFilestreamSetting {
+	<#
+	.EXTERNALHELP
+	SqlServerConfiguration-Help.xml
+	#>
+
+	[System.Diagnostics.DebuggerStepThrough()]
+
+	[CmdletBinding(
+		PositionalBinding = $false,
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'Medium',
+		DefaultParameterSetName = 'ServerInstance'
+	)]
+
+	[OutputType([SqlServerConfiguration.SqlFilestreamSettings])]
+
+	PARAM (
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'ServerInstance'
+		)]
+		[ValidateLength(1,128)]
+		[string]$ServerInstance,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false,
+			ParameterSetName = 'SmoServerObject'
+		)]
+		[Microsoft.SqlServer.Management.Smo.Server]$SmoServerObject,
+
+		[Parameter(
+			Mandatory = $true,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[ValidateRange(0,3)]
+		[uint]$AccessLevel,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[string]$ShareName,
+
+		[Parameter(
+			Mandatory = $false,
+			ValueFromPipeline = $false,
+			ValueFromPipelineByPropertyName = $false
+		)]
+		[switch]$ServiceRestart
+	)
+
+	begin {
+		try {
+			$ServerInstanceParameterSets = @('ServerInstance')
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				$SmoServerParameters = @{
+					'ServerInstance' = $ServerInstance
+					'DatabaseName' = 'master'
+				}
+
+				$SmoServer = Connect-SmoServer @SmoServerParameters
+			} else {
+				$SmoServer = $SmoServerObject
+			}
+
+			$CimSessionParameters = @{
+				'Name' = 'FileStreamSettings'
+			}
+
+			if ($SmoServer.NetName -NotIn @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+				$CimSessionParameters.Add('ComputerName', $SmoServer.Information.FullyQualifiedNetName)
+			}
+
+			$CimSession = New-CimSession @CimSessionParameters
+
+			if ($ServiceRestart) {
+				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				}
+			}
+		}
+		catch {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				if (Test-Path -Path Variable:\SmoServer) {
+					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServer
+					}
+				}
+			}
+
+			if (Test-Path -Path Variable:\CimSession) {
+				if ($CimSession -is [System.Management.Automation.Runspaces.PSSession]) {
+					Remove-CimSession -CimSession $CimSession
+				}
+			}
+
+			if (Test-Path -Path Variable:\PSSession) {
+				if ($PSSession -is [System.Management.Automation.Runspaces.PSSession]) {
+					Remove-PSSession -Session $PSSession
+				}
+			}
+
+			throw $_
+		}
+	}
+
+	process {
+		try {
+			$CimInstanceParameters = @{
+				CimSession  = $CimSession
+				Namespace = 'root\Microsoft\SQLServer'
+				Query = "SELECT NAME FROM __NAMESPACE WHERE NAME LIKE 'ComputerManagement%'"
+			}
+
+			$NameSpace = Get-CimInstance @CimInstanceParameters | Sort-Object -Property Name -Descending | Select-Object -First 1
+
+			if (-not $PSBoundParameters.ContainsKey('ShareName')) {
+				if ([string]::IsNullOrWhiteSpace($SmoServer.InstanceName)) {
+					$ShareName = 'MSSQLSERVER'
+				} else {
+					$ShareName = $SmoServer.InstanceName
+				}
+			}
+
+			$CimMethodParameters = @{
+				CimSession = $CimSession
+				Namespace = $("root\Microsoft\SQLServer\" + $Namespace.Name)
+				ClassName = 'FilestreamSettings'
+				MethodName = 'EnableFilestream'
+				Arguments = @{
+					AccessLevel = $AccessLevel
+					ShareName = $ShareName
+				}
+			}
+
+			Invoke-CimMethod @CimMethodParameters
+
+			if ($ServiceRestart) {
+				if ($PSCmdlet.ShouldProcess($SmoServer.NetName, 'Restart Service')) {
+					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
+						Restart-Service -Name $SmoServer.ServiceName -Force
+					} else {
+						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
+					}
+				}
+			} else {
+				Write-Warning "The Service $($SmoServer.ServiceName) must be restarted for the change to take effect."
+			}
+		}
+		catch {
+			throw $_
+		}
+		finally {
+			if (Test-Path -Path Variable:PSSession) {
+				Remove-PSSession -Session $PSSession
+			}
+
+			Remove-CimSession -CimSession $CimSession
+
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
+				Disconnect-SmoServer -SmoServerObject $SmoServer
+			}
+		}
+	}
+
+	end {
+	}
+}
+
 function Set-SqlProtocolProperty {
 	<#
 	.EXTERNALHELP
@@ -4278,6 +4633,12 @@ function Set-SqlProtocolProperty {
 			}
 
 			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
+
+			if ($ServiceRestart) {
+				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				}
+			}
 
 			$RegistryPath = [string]::Format("HKLM:\{0}\MSSQLServer\SuperSocketNetLib", $SmoWmiManagedComputer.Services[$SmoServer.ServiceName].AdvancedProperties['REGROOT'].Value)
 
@@ -4396,7 +4757,7 @@ function Set-SqlProtocolProperty {
 
 			if ($ServiceRestart) {
 				if ($PSCmdlet.ShouldProcess($SmoServer.NetName, 'Restart Service')) {
-					if ($SqlInstanceName -in @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
 						Restart-Service -Name $SmoServer.ServiceName -Force
 					} else {
 						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
@@ -4410,6 +4771,10 @@ function Set-SqlProtocolProperty {
 			throw $_
 		}
 		finally {
+			if (Test-Path -Path Variable:PSSession) {
+				Remove-PSSession -Session $PSSession
+			}
+
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
 				Disconnect-SmoServer -SmoServerObject $SmoServer
 			}
@@ -4504,6 +4869,12 @@ function Set-SqlServerStartupParameter {
 			}
 
 			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
+
+			if ($ServiceRestart) {
+				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				}
+			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
@@ -4511,6 +4882,12 @@ function Set-SqlServerStartupParameter {
 					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
 						Disconnect-SmoServer -SmoServerObject $SmoServer
 					}
+				}
+			}
+
+			if (Test-Path -Path Variable:\PSSession) {
+				if ($PSSession -is [System.Management.Automation.Runspaces.PSSession]) {
+					Remove-PSSession -Session $PSSession
 				}
 			}
 
@@ -4574,6 +4951,10 @@ function Set-SqlServerStartupParameter {
 			throw $_
 		}
 		finally {
+			if (Test-Path -Path Variable:PSSession) {
+				Remove-PSSession -Session $PSSession
+			}
+
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
 				Disconnect-SmoServer -SmoServerObject $SmoServer
 			}

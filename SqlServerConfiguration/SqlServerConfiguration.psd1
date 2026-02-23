@@ -4,7 +4,7 @@
 RootModule = 'SqlServerConfiguration.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.1.0.0'
+ModuleVersion = '1.2.0.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core', 'Desktop')
@@ -83,6 +83,7 @@ FunctionsToExport = @(
 	'Get-SqlDatabaseMailProfile',
 	'Get-SqlDatabaseMailProfileAccount',
 	'Get-SqlDatabaseMailProfilePrincipal',
+	'Get-SqlFilestreamSetting',
 	'Get-SqlServerProtocol',
 	'Get-SqlProtocolProperty',
 	'Get-SqlServerService',
@@ -96,6 +97,7 @@ FunctionsToExport = @(
 	'Set-SqlDatabaseMailAccount',
 	'Set-SqlDatabaseMailConfiguration',
 	'Set-SqlDatabaseMailProfile',
+	'Set-SqlFilestreamSetting',
 	'Set-SqlProtocolProperty'
 	'Set-SqlServerStartupParameter'
 )
@@ -143,7 +145,6 @@ PrivateData = @{
 		ReleaseNotes = 'Release Notes
 		Future Development
 			* SQL Server Service Properties
-				* Enable Filestream
 				* Enable AlwaysOn ($WmiManagedComputer.Services.IsHadrEnabled)
 				* Advanced Properties
 			* Ability to configure network protocols.
