@@ -477,7 +477,10 @@ function Find-Certificate {
 		ConfirmImpact = 'Low'
 	)]
 
-	[OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2Collection])]
+	[OutputType(
+		[System.Security.Cryptography.X509Certificates.X509Certificate2Collection[]],
+		[System.Array]
+	)]
 
 	param (
 		[Parameter(
@@ -537,7 +540,7 @@ function Find-Certificate {
 
 				$X509Certificate2Collection = $X509Store.Certificates.Find($X509FindType, $FindValue, $ValidOnly)
 
-				$X509Certificate2Collection
+				, $X509Certificate2Collection
 			}
 			catch {
 				throw $_
@@ -995,16 +998,14 @@ function Add-SqlDatabaseMailAccount {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -1015,16 +1016,16 @@ function Add-SqlDatabaseMailAccount {
 
 	process {
 		try {
-			$MailAccount = [Microsoft.SqlServer.Management.SMO.Mail.MailAccount]::New($SmoServer.Mail, $MailAccountName, $Description, $EmailDisplayName, $EmailAddress)
+			$MailAccount = [Microsoft.SqlServer.Management.SMO.Mail.MailAccount]::New($SmoServerObject.Mail, $MailAccountName, $Description, $EmailDisplayName, $EmailAddress)
 			$MailAccount.ReplyToAddress = $ReplyToAddress
 
 			if ($PSCmdlet.ShouldProcess($MailAccountName, 'Add SQL DatabaseMailAccount')) {
 				$MailAccount.Create()
 
-				$MailServer = $MailAccount.MailServers.Item($SmoServer.DomainInstanceName)
+				$MailServer = $MailAccount.MailServers.Item($SmoServerObject.DomainInstanceName)
 
 				$MailServer.Rename($SmtpServerName)
-				$MailServer.UseSSLConnection = $UseSslConnection
+				$MailServer.EnableSsl = $UseSslConnection
 				$MailServer.Port = $SmtpServerPort
 
 				switch ($SMTPAuthenticationType) {
@@ -1051,7 +1052,7 @@ function Add-SqlDatabaseMailAccount {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -1129,16 +1130,14 @@ function Add-SqlDatabaseMailProfileAccount {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -1149,7 +1148,7 @@ function Add-SqlDatabaseMailProfileAccount {
 
 	process {
 		try {
-			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServerObject -MailProfileName $MailProfileName
 
 			$MailProfile.AddAccount($MailAccountName, $SequenceNumber)
 
@@ -1162,7 +1161,7 @@ function Add-SqlDatabaseMailProfileAccount {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -1240,16 +1239,14 @@ function Add-SqlDatabaseMailProfilePrincipal {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -1261,7 +1258,7 @@ function Add-SqlDatabaseMailProfilePrincipal {
 	process {
 		try {
 			if ($PrincipalName -notin @('public', '##MS_PolicyEventProcessingLogin##', '##MS_PolicyTsqlExecutionLogin##', 'MS_DataCollectionInternalUser')) {
-				$DatabaseObject = Get-SmoDatabaseObject -SmoServerObject $SmoServer -DatabaseName msdb
+				$DatabaseObject = Get-SmoDatabaseObject -SmoServerObject $SmoServerObject -DatabaseName msdb
 				$RoleMembers = $DatabaseObject.Roles['DatabaseMailUserRole'].EnumMembers()
 
 				if ($PrincipalName -notin $RoleMembers) {
@@ -1274,7 +1271,7 @@ function Add-SqlDatabaseMailProfilePrincipal {
 				}
 			}
 
-			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServerObject -MailProfileName $MailProfileName
 
 			$MailProfile.AddPrincipal($PrincipalName, $DefaultProfile)
 
@@ -1287,7 +1284,7 @@ function Add-SqlDatabaseMailProfilePrincipal {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -1363,24 +1360,22 @@ function Add-SqlServerStartupParameter {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
-			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
+			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 
 			if ($ServiceRestart) {
-				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				if ($SmoServerObject.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 				}
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $DatabaseNameParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -1397,7 +1392,7 @@ function Add-SqlServerStartupParameter {
 
 	process {
 		try {
-			$StartupParameters = Get-SqlServerStartupParameter -SmoServerObject $SmoServer
+			$StartupParameters = Get-SqlServerStartupParameter -SmoServerObject $SmoServerObject
 
 			if ($Name -eq 'TraceFlag') {
 				$TraceFlag = $StartupParameters.where({$_.Name -eq 'TraceFlag' -and $_.Value -eq $Value})
@@ -1427,7 +1422,7 @@ function Add-SqlServerStartupParameter {
 
 			$SqlStartupParameter = [SqlServerConfiguration.SqlStartupParameter]::New([SqlServerConfiguration.StartupParameter]$Name, $Value)
 
-			$Service = $SmoWmiManagedComputer.Services[$SmoServer.ServiceName]
+			$Service = $SmoWmiManagedComputer.Services[$SmoServerObject.ServiceName]
 
 			$Service.StartupParameters = [string]::Format('{0};{1}{2}', $Service.StartupParameters, $SqlStartupParameter.Option, $Value)
 
@@ -1436,15 +1431,15 @@ function Add-SqlServerStartupParameter {
 			}
 
 			if ($ServiceRestart) {
-				if ($PSCmdlet.ShouldProcess($SmoServer.NetName, 'Restart Service')) {
-					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-						Restart-Service -Name $SmoServer.ServiceName -Force
+				if ($PSCmdlet.ShouldProcess($SmoServerObject.NetName, 'Restart Service')) {
+					if ($SmoServerObject.NetName -eq [System.Net.Dns]::GetHostName()) {
+						Restart-Service -Name $SmoServerObject.ServiceName -Force
 					} else {
-						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
+						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServerObject.ServiceName
 					}
 				}
 			} else {
-				Write-Warning "The Service $($SmoServer.ServiceName) must be restarted for the change to take effect."
+				Write-Warning "The Service $($SmoServerObject.ServiceName) must be restarted for the change to take effect."
 			}
 		}
 		catch {
@@ -1456,7 +1451,7 @@ function Add-SqlServerStartupParameter {
 			}
 
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -1511,16 +1506,14 @@ function Disable-SqlDatabaseMail {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -1531,12 +1524,12 @@ function Disable-SqlDatabaseMail {
 
 	process {
 		try {
-			$SmoServer.Configuration.DatabaseMailEnabled.ConfigValue = 0
+			$SmoServerObject.Configuration.DatabaseMailEnabled.ConfigValue = 0
 
-			if ($PSCmdlet.ShouldProcess($SmoServer.Name, 'Disable SQL Database Mail')) {
-				$SmoServer.Configuration.Alter()
+			if ($PSCmdlet.ShouldProcess($SmoServerObject.Name, 'Disable SQL Database Mail')) {
+				$SmoServerObject.Configuration.Alter()
 
-				$SmoServer.Refresh()
+				$SmoServerObject.Refresh()
 			}
 		}
 		catch {
@@ -1544,7 +1537,7 @@ function Disable-SqlDatabaseMail {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -1613,22 +1606,20 @@ function Disable-SqlServerProtocol {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
 			if ($ServiceRestart) {
-				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				if ($SmoServerObject.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 				}
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -1645,7 +1636,7 @@ function Disable-SqlServerProtocol {
 
 	process {
 		try {
-			$ServerProtocol = Get-SqlServerProtocol -SmoServerObject $SmoServer -Protocol $Protocol
+			$ServerProtocol = Get-SqlServerProtocol -SmoServerObject $SmoServerObject -Protocol $Protocol
 
 			if ($PSCmdlet.ShouldProcess($SqlInstanceName, 'Disable SQL Server Protocol')) {
 				$ServerProtocol.IsEnabled = $false
@@ -1653,15 +1644,15 @@ function Disable-SqlServerProtocol {
 			}
 
 			if ($ServiceRestart) {
-				if ($PSCmdlet.ShouldProcess($SmoServer.ServiceName, 'Restart SQL Server Service')) {
-					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-						Restart-Service -Name $SmoServer.ServiceName -Force
+				if ($PSCmdlet.ShouldProcess($SmoServerObject.ServiceName, 'Restart SQL Server Service')) {
+					if ($SmoServerObject.NetName -eq [System.Net.Dns]::GetHostName()) {
+						Restart-Service -Name $SmoServerObject.ServiceName -Force
 					} else {
-						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
+						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServerObject.ServiceName
 					}
 				}
 			} else {
-				Write-Warning "The Service $($SmoServer.ServiceName) must be restarted for the change to take effect."
+				Write-Warning "The Service $($SmoServerObject.ServiceName) must be restarted for the change to take effect."
 			}
 		}
 		catch {
@@ -1673,7 +1664,7 @@ function Disable-SqlServerProtocol {
 			}
 
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -1750,22 +1741,20 @@ function Enable-SqlConnectionEncryption {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
 			if ($ServiceRestart) {
-				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				if ($SmoServerObject.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 				}
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -1784,7 +1773,7 @@ function Enable-SqlConnectionEncryption {
 
 	process {
 		try {
-			if ($SmoServer.NetName -notin @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+			if ($SmoServerObject.NetName -notin @([System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
 				throw [System.Management.Automation.ErrorRecord]::New(
 					[Exception]::New('Remote SQL Server instances are not supported.'),
 					'1',
@@ -1815,8 +1804,8 @@ function Enable-SqlConnectionEncryption {
 					'Name' = 'SQLCertificate'
 				}
 
-				if ($SmoServer.NetName -NotIn @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
-					$CimSessionParameters.Add('ComputerName', $SmoServer.Information.FullyQualifiedNetName)
+				if ($SmoServerObject.NetName -NotIn @([System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+					$CimSessionParameters.Add('ComputerName', $SmoServerObject.Information.FullyQualifiedNetName)
 				}
 
 				$CimSession = New-CimSession @CimSessionParameters
@@ -1824,7 +1813,7 @@ function Enable-SqlConnectionEncryption {
 				$Win32ComputerSystem = Get-CimInstance -CimSession $CimSession -ClassName Win32_ComputerSystem
 
 				$CertificateParameters = @{
-					FindValue = $SmoServer.Information.FullyQualifiedNetName
+					FindValue = $SmoServerObject.Information.FullyQualifiedNetName
 					X509FindType = 'FindBySubjectName'
 					StoreLocation = 'LocalMachine'
 					StoreName = 'My'
@@ -1859,7 +1848,7 @@ function Enable-SqlConnectionEncryption {
 			#Endregion
 
 			#Region Set Private Key Permissions
-			foreach ($ServiceAccount in @($SmoServer.ServiceAccount, $SmoServer.JobServer.ServiceAccount)) {
+			foreach ($ServiceAccount in @($SmoServerObject.ServiceAccount, $SmoServerObject.JobServer.ServiceAccount)) {
 				$AccessRuleParameters = @{
 					Certificate = $ValidCertificate
 					Grantee = $ServiceAccount
@@ -1875,7 +1864,7 @@ function Enable-SqlConnectionEncryption {
 
 			#Region Set Encryption Properties
 			$PropertyParameters = @{
-				SmoServerObject = $SmoServer
+				SmoServerObject = $SmoServerObject
 				CertificateThumbprint = $ValidCertificate.Thumbprint
 			}
 
@@ -1883,22 +1872,22 @@ function Enable-SqlConnectionEncryption {
 				$PropertyParameters.Add('RequireEncryption', $true)
 			}
 
-			if ($PSCmdlet.ShouldProcess($SmoServer.NetName, "Set encryption properties")) {
+			if ($PSCmdlet.ShouldProcess($SmoServerObject.NetName, "Set encryption properties")) {
 				Set-SQLProtocolProperty @PropertyParameters
 			}
 			#EndRegion
 
 			#Region Restart SQL Server Service
 			if ($ServiceRestart) {
-				if ($PSCmdlet.ShouldProcess($SmoServer.ServiceName, 'Restart SQL Server Service')) {
-					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-						Restart-Service -Name $SmoServer.ServiceName -Force
+				if ($PSCmdlet.ShouldProcess($SmoServerObject.ServiceName, 'Restart SQL Server Service')) {
+					if ($SmoServerObject.NetName -eq [System.Net.Dns]::GetHostName()) {
+						Restart-Service -Name $SmoServerObject.ServiceName -Force
 					} else {
-						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
+						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServerObject.ServiceName
 					}
 				}
 			} else {
-				Write-Warning "The Service $($SmoServer.ServiceName) must be restarted for the change to take effect."
+				Write-Warning "The Service $($SmoServerObject.ServiceName) must be restarted for the change to take effect."
 			}
 			#EndRegion
 
@@ -1921,7 +1910,7 @@ function Enable-SqlConnectionEncryption {
 			}
 
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -1976,16 +1965,14 @@ function Enable-SqlDatabaseMail {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -1996,12 +1983,12 @@ function Enable-SqlDatabaseMail {
 
 	process {
 		try {
-			$SmoServer.Configuration.DatabaseMailEnabled.ConfigValue = 1
+			$SmoServerObject.Configuration.DatabaseMailEnabled.ConfigValue = 1
 
-			if ($PSCmdlet.ShouldProcess($SmoServer.Name, 'Disable SQL Database Mail')) {
-				$SmoServer.Configuration.Alter()
+			if ($PSCmdlet.ShouldProcess($SmoServerObject.Name, 'Disable SQL Database Mail')) {
+				$SmoServerObject.Configuration.Alter()
 
-				$SmoServer.Refresh()
+				$SmoServerObject.Refresh()
 			}
 		}
 		catch {
@@ -2009,7 +1996,7 @@ function Enable-SqlDatabaseMail {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -2078,22 +2065,20 @@ function Enable-SqlServerProtocol {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
 			if ($ServiceRestart) {
-				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				if ($SmoServerObject.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 				}
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -2110,23 +2095,23 @@ function Enable-SqlServerProtocol {
 
 	process {
 		try {
-			$ServerProtocol = Get-SqlServerProtocol -SmoServerObject $SmoServer -Protocol $Protocol
+			$ServerProtocol = Get-SqlServerProtocol -SmoServerObject $SmoServerObject -Protocol $Protocol
 
-			if ($PSCmdlet.ShouldProcess($SqlInstanceName, 'Enable SQL Server Protocol')) {
+			if ($PSCmdlet.ShouldProcess($Protocol, 'Enable SQL Server Protocol')) {
 				$ServerProtocol.IsEnabled = $false
 				$ServerProtocol.Alter()
 			}
 
 			if ($ServiceRestart) {
-				if ($PSCmdlet.ShouldProcess($SmoServer.ServiceName, 'Restart SQL Server Service')) {
-					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-						Restart-Service -Name $SmoServer.ServiceName -Force
+				if ($PSCmdlet.ShouldProcess($SmoServerObject.ServiceName, 'Restart SQL Server Service')) {
+					if ($SmoServerObject.NetName -eq [System.Net.Dns]::GetHostName()) {
+						Restart-Service -Name $SmoServerObject.ServiceName -Force
 					} else {
-						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
+						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServerObject.ServiceName
 					}
 				}
 			} else {
-				Write-Warning "The Service $($SmoServer.ServiceName) must be restarted for the change to take effect."
+				Write-Warning "The Service $($SmoServerObject.ServiceName) must be restarted for the change to take effect."
 			}
 		}
 		catch {
@@ -2138,7 +2123,7 @@ function Enable-SqlServerProtocol {
 			}
 
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -2201,16 +2186,14 @@ function Get-SqlDatabaseMailAccount {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -2222,9 +2205,9 @@ function Get-SqlDatabaseMailAccount {
 	process {
 		try {
 			if ($PSBoundParameters.ContainsKey('MailAccountName')) {
-				$MailAccounts = $SmoServer.Mail.Accounts.Item($MailAccountName)
+				$MailAccounts = $SmoServerObject.Mail.Accounts.Item($MailAccountName)
 			} else {
-				$MailAccounts = $SmoServer.Mail.Accounts
+				$MailAccounts = $SmoServerObject.Mail.Accounts
 			}
 
 			$MailAccounts
@@ -2234,7 +2217,7 @@ function Get-SqlDatabaseMailAccount {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -2296,16 +2279,14 @@ function Get-SqlDatabaseMailConfiguration {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -2317,9 +2298,9 @@ function Get-SqlDatabaseMailConfiguration {
 	process {
 		try {
 			if ($PSBoundParameters.ContainsKey('MailConfigurationName')) {
-				$ConfigurationValues = $SmoServer.Mail.ConfigurationValues.Item($MailConfigurationName)
+				$ConfigurationValues = $SmoServerObject.Mail.ConfigurationValues.Item($MailConfigurationName)
 			} else {
-				$ConfigurationValues = $SmoServer.Mail.ConfigurationValues
+				$ConfigurationValues = $SmoServerObject.Mail.ConfigurationValues
 			}
 
 			foreach ($ConfigurationValue in $ConfigurationValues) {
@@ -2333,7 +2314,7 @@ function Get-SqlDatabaseMailConfiguration {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -2396,16 +2377,14 @@ function Get-SqlDatabaseMailProfile {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -2417,9 +2396,9 @@ function Get-SqlDatabaseMailProfile {
 	process {
 		try {
 			if ($PSBoundParameters.ContainsKey('MailProfileName')) {
-				$SmoServer.Mail.Profiles.Item($MailProfileName)
+				$SmoServerObject.Mail.Profiles.Item($MailProfileName)
 			} else {
-				$SmoServer.Mail.Profiles
+				$SmoServerObject.Mail.Profiles
 			}
 		}
 		catch {
@@ -2427,7 +2406,7 @@ function Get-SqlDatabaseMailProfile {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -2451,7 +2430,7 @@ function Get-SqlDatabaseMailProfileAccount {
 		DefaultParameterSetName = 'ServerInstance'
 	)]
 
-	[OutputType([SqlServerConfiguration.SqlDatabaseMailProfilePrincipal])]
+	[OutputType([SqlServerConfiguration.SqlDatabaseMailProfileAccount])]
 
 	PARAM (
 		[Parameter(
@@ -2498,16 +2477,14 @@ function Get-SqlDatabaseMailProfileAccount {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -2518,7 +2495,7 @@ function Get-SqlDatabaseMailProfileAccount {
 
 	process {
 		try {
-			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServerObject -MailProfileName $MailProfileName
 
 			if ($PSBoundParameters.ContainsKey('AccountName')) {
 				$Accounts = $MailProfile.EnumAccounts().where({$_.AccountName -eq $AccountName})
@@ -2541,7 +2518,7 @@ function Get-SqlDatabaseMailProfileAccount {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -2612,16 +2589,14 @@ function Get-SqlDatabaseMailProfilePrincipal {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -2632,7 +2607,7 @@ function Get-SqlDatabaseMailProfilePrincipal {
 
 	process {
 		try {
-			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServerObject -MailProfileName $MailProfileName
 
 			if ($PSBoundParameters.ContainsKey('PrincipalName')) {
 				$Principals = $MailProfile.EnumPrincipals().where({$_.PrincipalName -eq $PrincipalName})
@@ -2655,7 +2630,7 @@ function Get-SqlDatabaseMailProfilePrincipal {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -2710,26 +2685,24 @@ function Get-SqlFilestreamSetting {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
 			$CimSessionParameters = @{
 				'Name' = 'FileStreamSettings'
 			}
 
-			if ($SmoServer.NetName -NotIn @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
-				$CimSessionParameters.Add('ComputerName', $SmoServer.Information.FullyQualifiedNetName)
+			if ($SmoServerObject.NetName -NotIn @([System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+				$CimSessionParameters.Add('ComputerName', $SmoServerObject.Information.FullyQualifiedNetName)
 			}
 
 			$CimSession = New-CimSession @CimSessionParameters
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -2775,7 +2748,7 @@ function Get-SqlFilestreamSetting {
 			Remove-CimSession -CimSession $CimSession
 
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -2830,18 +2803,16 @@ function Get-SqlProtocolProperty {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
-			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
+			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 
-			if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-				New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+			if ($SmoServerObject.NetName -ne [System.Net.Dns]::GetHostName()) {
+				New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 			}
 
-			$RegistryPath = [string]::Format("HKLM:\{0}\MSSQLServer\SuperSocketNetLib", $SmoWmiManagedComputer.Services[$SmoServer.ServiceName].AdvancedProperties['REGROOT'].Value)
+			$RegistryPath = [string]::Format("HKLM:\{0}\MSSQLServer\SuperSocketNetLib", $SmoWmiManagedComputer.Services[$SmoServerObject.ServiceName].AdvancedProperties['REGROOT'].Value)
 
 			$ScriptBlock = {
 				param ($Path)
@@ -2851,9 +2822,9 @@ function Get-SqlProtocolProperty {
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -2875,7 +2846,7 @@ function Get-SqlProtocolProperty {
 				ArgumentList = @($RegistryPath)
 			}
 
-			if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
+			if ($SmoServerObject.NetName -ne [System.Net.Dns]::GetHostName()) {
 				$CommandParameters.Add('Session', $PSSession)
 			}
 
@@ -2884,7 +2855,11 @@ function Get-SqlProtocolProperty {
 			$SqlProtocolProperty = [SqlServerConfiguration.SqlProtocolProperty]::New()
 
 			$SqlProtocolProperty.RequireEncryption = $ItemProperties.ForceEncryption
-			$SqlProtocolProperty.RequireStrictEncryption = $ItemProperties.ForceStrict
+
+			if ($SmoServerObject.Version -ge [version]'16.0.0.0') {
+				$SqlProtocolProperty.RequireStrictEncryption = $ItemProperties.ForceStrict
+			}
+
 			$SqlProtocolProperty.HideInstance = $ItemProperties.HideInstance
 			$SqlProtocolProperty.CertificateThumbprint = $ItemProperties.Certificate
 			$SqlProtocolProperty.ExtendedProtection = $ItemProperties.ExtendedProtection
@@ -2900,7 +2875,7 @@ function Get-SqlProtocolProperty {
 			}
 
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -2962,18 +2937,16 @@ function Get-SqlServerProtocol {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
-			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
+			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -2984,10 +2957,10 @@ function Get-SqlServerProtocol {
 
 	process {
 		try {
-			if ([string]::IsNullOrWhiteSpace($SmoServer.InstanceName)) {
+			if ([string]::IsNullOrWhiteSpace($SmoServerObject.InstanceName)) {
 				$SqlInstanceName = 'MSSQLSERVER'
 			} else {
-				$SqlInstanceName = $SmoServer.InstanceName
+				$SqlInstanceName = $SmoServerObject.InstanceName
 			}
 
 			$ServerProtocols = $SmoWmiManagedComputer.ServerInstances[$SqlInstanceName].ServerProtocols
@@ -3009,7 +2982,7 @@ function Get-SqlServerProtocol {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -3071,18 +3044,16 @@ function Get-SqlServerService {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
-			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
+			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -3112,7 +3083,7 @@ function Get-SqlServerService {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -3167,18 +3138,16 @@ function Get-SqlServerStartupParameter {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
-			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
+			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -3189,7 +3158,7 @@ function Get-SqlServerStartupParameter {
 
 	process {
 		try {
-			$StartupParameters = $SmoWmiManagedComputer.Services[$SmoServer.ServiceName].StartupParameters.Split(';', @([system.StringSplitOptions]::RemoveEmptyEntries, [system.StringSplitOptions]::TrimEntries))
+			$StartupParameters = $SmoWmiManagedComputer.Services[$SmoServerObject.ServiceName].StartupParameters.Split(';', @([system.StringSplitOptions]::RemoveEmptyEntries, [system.StringSplitOptions]::TrimEntries))
 
 			$RegExPattern = '^(?<Option>\-.)(?<Value>.+)'
 			$RegEx = [regex]::New($RegExPattern, [System.Text.RegularExpressions.RegexOptions]::None)
@@ -3210,7 +3179,7 @@ function Get-SqlServerStartupParameter {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -3280,16 +3249,14 @@ function New-SqlDatabaseMailProfile {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -3300,7 +3267,7 @@ function New-SqlDatabaseMailProfile {
 
 	process {
 		try {
-			$MailProfile = [Microsoft.SqlServer.Management.SMO.Mail.MailProfile]::New($SmoServer.Mail, $MailProfileName, $Description)
+			$MailProfile = [Microsoft.SqlServer.Management.SMO.Mail.MailProfile]::New($SmoServerObject.Mail, $MailProfileName, $Description)
 
 			if ($PSCmdlet.ShouldProcess($MailProfileName, 'Create SQL DatabaseMailProfile')) {
 				$MailProfile.Create()
@@ -3313,7 +3280,7 @@ function New-SqlDatabaseMailProfile {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -3376,16 +3343,14 @@ function Remove-SqlDatabaseMailAccount {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -3396,7 +3361,7 @@ function Remove-SqlDatabaseMailAccount {
 
 	process {
 		try {
-			$MailAccount = Get-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName $MailAccountName
+			$MailAccount = Get-SqlDatabaseMailAccount -SmoServerObject $SmoServerObject -MailAccountName $MailAccountName
 
 			if ($PSCmdlet.ShouldProcess($MailAccountName, 'Remove SQL DatabaseMailAccount')) {
 				$MailAccount.Drop()
@@ -3407,7 +3372,7 @@ function Remove-SqlDatabaseMailAccount {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -3470,16 +3435,14 @@ function Remove-SqlDatabaseMailProfile {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -3490,7 +3453,7 @@ function Remove-SqlDatabaseMailProfile {
 
 	process {
 		try {
-			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServerObject -MailProfileName $MailProfileName
 
 			if ($PSCmdlet.ShouldProcess($MailProfileName, 'Remove SQL DatabaseMailProfile')) {
 				$MailProfile.Drop()
@@ -3501,7 +3464,7 @@ function Remove-SqlDatabaseMailProfile {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -3572,16 +3535,14 @@ function Remove-SqlDatabaseMailProfileAccount {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -3592,7 +3553,7 @@ function Remove-SqlDatabaseMailProfileAccount {
 
 	process {
 		try {
-			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServerObject -MailProfileName $MailProfileName
 
 			$MailProfile.RemoveAccount($MailAccountName)
 
@@ -3605,7 +3566,7 @@ function Remove-SqlDatabaseMailProfileAccount {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -3676,16 +3637,14 @@ function Remove-SqlDatabaseMailProfilePrincipal {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -3696,7 +3655,7 @@ function Remove-SqlDatabaseMailProfilePrincipal {
 
 	process {
 		try {
-			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServerObject -MailProfileName $MailProfileName
 
 			$MailProfile.RemovePrincipal($PrincipalName)
 
@@ -3709,7 +3668,7 @@ function Remove-SqlDatabaseMailProfilePrincipal {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -3805,18 +3764,16 @@ function Remove-SqlServerStartupParameter {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
-			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
+			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -3827,7 +3784,7 @@ function Remove-SqlServerStartupParameter {
 
 	process {
 		try {
-			$StartupParameters = Get-SqlServerStartupParameter -SmoServerObject $SmoServer
+			$StartupParameters = Get-SqlServerStartupParameter -SmoServerObject $SmoServerObject
 
 			if ($Name -eq 'TraceFlag') {
 				$StartupParameter = $StartupParameters.where({$_.Name -eq $Name -and $_.Value -eq $Value})
@@ -3854,7 +3811,7 @@ function Remove-SqlServerStartupParameter {
 				}
 			}
 
-			$Service = $SmoWmiManagedComputer.Services[$SmoServer.ServiceName]
+			$Service = $SmoWmiManagedComputer.Services[$SmoServerObject.ServiceName]
 
 			$Service.StartupParameters = [string]::Join(';', $NewStartupParameters)
 
@@ -3863,15 +3820,15 @@ function Remove-SqlServerStartupParameter {
 			}
 
 			if ($ServiceRestart) {
-				if ($PSCmdlet.ShouldProcess($SmoServer.NetName, 'Restart Service')) {
+				if ($PSCmdlet.ShouldProcess($SmoServerObject.NetName, 'Restart Service')) {
 					if ($SqlInstanceName -in @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
-						Restart-Service -Name $SmoServer.ServiceName -Force
+						Restart-Service -Name $SmoServerObject.ServiceName -Force
 					} else {
-						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
+						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServerObject.ServiceName
 					}
 				}
 			} else {
-				Write-Warning "The Service $($SmoServer.ServiceName) must be restarted for the change to take effect."
+				Write-Warning "The Service $($SmoServerObject.ServiceName) must be restarted for the change to take effect."
 			}
 		}
 		catch {
@@ -3879,7 +3836,7 @@ function Remove-SqlServerStartupParameter {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -4033,16 +3990,14 @@ function Set-SqlDatabaseMailAccount {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -4053,7 +4008,7 @@ function Set-SqlDatabaseMailAccount {
 
 	process {
 		try {
-			$MailAccount = Get-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName $MailAccountName
+			$MailAccount = Get-SqlDatabaseMailAccount -SmoServerObject $SmoServerObject -MailAccountName $MailAccountName
 
 			if ($PSBoundParameters.ContainsKey('NewMailAccountName')) {
 				$MailAccount.Rename($NewMailAccountName)
@@ -4086,7 +4041,7 @@ function Set-SqlDatabaseMailAccount {
 			}
 
 			if ($PSBoundParameters.ContainsKey('UseSslConnection')) {
-				$MailServer.UseSSLConnection = $UseSslConnection
+				$MailServer.EnableSsl = $UseSslConnection
 			}
 
 			switch ($SMTPAuthenticationType) {
@@ -4112,7 +4067,7 @@ function Set-SqlDatabaseMailAccount {
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -4131,7 +4086,7 @@ function Set-SqlDatabaseMailConfiguration {
 
 	[CmdletBinding(
 		PositionalBinding = $false,
-		SupportsShouldProcess = $false,
+		SupportsShouldProcess = $true,
 		ConfirmImpact = 'Low',
 		DefaultParameterSetName = 'ServerInstance'
 	)]
@@ -4181,16 +4136,14 @@ function Set-SqlDatabaseMailConfiguration {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -4201,22 +4154,23 @@ function Set-SqlDatabaseMailConfiguration {
 
 	process {
 		try {
-			$ConfigurationValues = $SmoServer.Mail.ConfigurationValues.Item($MailConfigurationName)
+			$ConfigurationValues = $SmoServerObject.Mail.ConfigurationValues.Item($MailConfigurationName)
 
 			$ConfigurationValues.Value = $MailConfigurationValue
 
+			if ($PSCmdlet.ShouldProcess($MailConfigurationName, 'Set mail configuration properties.')) {
+				$ConfigurationValues.Alter()
+				$SmoServerObject.Mail.ConfigurationValues.Refresh()
+			}
 
-			$ConfigurationValues.Alter()
-			$SmoServer.Mail.Refresh()
-
-			Get-SqlDatabaseMailConfiguration -SmoServerObject $SmoServer -MailConfigurationName $MailConfigurationName
+			Get-SqlDatabaseMailConfiguration -SmoServerObject $SmoServerObject -MailConfigurationName $MailConfigurationName
 		}
 		catch {
 			throw $_
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -4235,7 +4189,7 @@ function Set-SqlDatabaseMailProfile {
 
 	[CmdletBinding(
 		PositionalBinding = $false,
-		SupportsShouldProcess = $false,
+		SupportsShouldProcess = $true,
 		ConfirmImpact = 'Low',
 		DefaultParameterSetName = 'ServerInstance'
 	)]
@@ -4294,16 +4248,14 @@ function Set-SqlDatabaseMailProfile {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -4314,7 +4266,7 @@ function Set-SqlDatabaseMailProfile {
 
 	process {
 		try {
-			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $MailProfileName
+			$MailProfile = Get-SqlDatabaseMailProfile -SmoServerObject $SmoServerObject -MailProfileName $MailProfileName
 
 			if ($PSBoundParameters.ContainsKey('NewMailProfileName')) {
 				$MailProfile.Rename($NewMailProfileName)
@@ -4324,17 +4276,19 @@ function Set-SqlDatabaseMailProfile {
 				$MailProfile.Description = $Description
 			}
 
-			$MailProfile.Alter()
-			$SmoServer.Mail.Refresh()
+			if ($PSCmdlet.ShouldProcess($MailProfileName, 'Set mail profile properties.')) {
+				$MailProfile.Alter()
+				$SmoServerObject.Mail.Refresh()
+			}
 
-			Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName $NewMailProfileName
+			Get-SqlDatabaseMailProfile -SmoServerObject $SmoServerObject -MailProfileName $NewMailProfileName
 		}
 		catch {
 			throw $_
 		}
 		finally {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -4411,32 +4365,30 @@ function Set-SqlFilestreamSetting {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
 			$CimSessionParameters = @{
 				'Name' = 'FileStreamSettings'
 			}
 
-			if ($SmoServer.NetName -NotIn @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
-				$CimSessionParameters.Add('ComputerName', $SmoServer.Information.FullyQualifiedNetName)
+			if ($SmoServerObject.NetName -NotIn @([System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
+				$CimSessionParameters.Add('ComputerName', $SmoServerObject.Information.FullyQualifiedNetName)
 			}
 
 			$CimSession = New-CimSession @CimSessionParameters
 
 			if ($ServiceRestart) {
-				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				if ($SmoServerObject.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 				}
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -4468,10 +4420,10 @@ function Set-SqlFilestreamSetting {
 			$NameSpace = Get-CimInstance @CimInstanceParameters | Sort-Object -Property Name -Descending | Select-Object -First 1
 
 			if (-not $PSBoundParameters.ContainsKey('ShareName')) {
-				if ([string]::IsNullOrWhiteSpace($SmoServer.InstanceName)) {
+				if ([string]::IsNullOrWhiteSpace($SmoServerObject.InstanceName)) {
 					$ShareName = 'MSSQLSERVER'
 				} else {
-					$ShareName = $SmoServer.InstanceName
+					$ShareName = $SmoServerObject.InstanceName
 				}
 			}
 
@@ -4489,15 +4441,15 @@ function Set-SqlFilestreamSetting {
 			Invoke-CimMethod @CimMethodParameters
 
 			if ($ServiceRestart) {
-				if ($PSCmdlet.ShouldProcess($SmoServer.NetName, 'Restart Service')) {
-					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-						Restart-Service -Name $SmoServer.ServiceName -Force
+				if ($PSCmdlet.ShouldProcess($SmoServerObject.NetName, 'Restart Service')) {
+					if ($SmoServerObject.NetName -eq [System.Net.Dns]::GetHostName()) {
+						Restart-Service -Name $SmoServerObject.ServiceName -Force
 					} else {
-						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
+						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServerObject.ServiceName
 					}
 				}
 			} else {
-				Write-Warning "The Service $($SmoServer.ServiceName) must be restarted for the change to take effect."
+				Write-Warning "The Service $($SmoServerObject.ServiceName) must be restarted for the change to take effect."
 			}
 		}
 		catch {
@@ -4511,7 +4463,7 @@ function Set-SqlFilestreamSetting {
 			Remove-CimSession -CimSession $CimSession
 
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -4627,20 +4579,27 @@ function Set-SqlProtocolProperty {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
-			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
-
-			if ($ServiceRestart) {
-				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+			if ($SmoServerObject.Version -lt [version]'16.0.0.0') {
+				if ($PSBoundParameters.ContainsKey('RequireStrictEncryption')) {
+					throw [System.Management.Automation.ErrorRecord]::New(
+						[Exception]::New('RequireStrictEncryption requires SQL Server 2022 or higher.'),
+						'1',
+						[System.Management.Automation.ErrorCategory]::InvalidOperation,
+						$SmoServerObject.Version
+					)
 				}
 			}
 
-			$RegistryPath = [string]::Format("HKLM:\{0}\MSSQLServer\SuperSocketNetLib", $SmoWmiManagedComputer.Services[$SmoServer.ServiceName].AdvancedProperties['REGROOT'].Value)
+			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
+
+			if ($SmoServerObject.NetName -ne [System.Net.Dns]::GetHostName()) {
+				$PSSession = New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
+			}
+
+			$RegistryPath = [string]::Format("HKLM:\{0}\MSSQLServer\SuperSocketNetLib", $SmoWmiManagedComputer.Services[$SmoServerObject.ServiceName].AdvancedProperties['REGROOT'].Value)
 
 			$ScriptBlock = {
 				param ($Path, $Name, $Value)
@@ -4650,9 +4609,9 @@ function Set-SqlProtocolProperty {
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -4671,7 +4630,7 @@ function Set-SqlProtocolProperty {
 		try {
 			$Settings = @{}
 
-			switch ($PSBoundParameters.Keys) {
+			switch ($PSBoundParameters.Keys.where({$_ -notin @('ServerInstance', 'SmoServerObject', 'ServiceRestart', [System.Management.Automation.Cmdlet]::CommonParameters, [System.Management.Automation.Cmdlet]::OptionalCommonParameters)})) {
 				'CertificateThumbprint' {
 					$CertificateParameters = @{
 						FindValue = $CertificateThumbprint
@@ -4740,14 +4699,14 @@ function Set-SqlProtocolProperty {
 				}
 			}
 
-			if ($PSCmdlet.ShouldProcess($SmoServer.NetName, 'Set SQL Protocol Properties')) {
+			if ($PSCmdlet.ShouldProcess($SmoServerObject.NetName, 'Set SQL Protocol Properties')) {
 				foreach ($Item in $Settings.GetEnumerator()) {
 					$CommandParameters = @{
 						ScriptBlock = $ScriptBlock
 						ArgumentList = @($RegistryPath, $Item.Key, $Item.Value)
 					}
 
-					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
+					if ($SmoServerObject.NetName -ne [System.Net.Dns]::GetHostName()) {
 						$CommandParameters.Add('Session', $PSSession)
 					}
 
@@ -4756,15 +4715,15 @@ function Set-SqlProtocolProperty {
 			}
 
 			if ($ServiceRestart) {
-				if ($PSCmdlet.ShouldProcess($SmoServer.NetName, 'Restart Service')) {
-					if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-						Restart-Service -Name $SmoServer.ServiceName -Force
+				if ($PSCmdlet.ShouldProcess($SmoServerObject.NetName, 'Restart Service')) {
+					if ($SmoServerObject.NetName -eq [System.Net.Dns]::GetHostName()) {
+						Restart-Service -Name $SmoServerObject.ServiceName -Force
 					} else {
-						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
+						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServerObject.ServiceName
 					}
 				}
 			} else {
-				Write-Warning "The Service $($SmoServer.ServiceName) must be restarted for the change to take effect."
+				Write-Warning "The Service $($SmoServerObject.ServiceName) must be restarted for the change to take effect."
 			}
 		}
 		catch {
@@ -4776,7 +4735,7 @@ function Set-SqlProtocolProperty {
 			}
 
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}
@@ -4863,24 +4822,22 @@ function Set-SqlServerStartupParameter {
 					'DatabaseName' = 'master'
 				}
 
-				$SmoServer = Connect-SmoServer @SmoServerParameters
-			} else {
-				$SmoServer = $SmoServerObject
+				$SmoServerObject = Connect-SmoServer @SmoServerParameters
 			}
 
-			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServer.NetName
+			$SmoWmiManagedComputer = Connect-SmoWmiManagedComputer -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 
 			if ($ServiceRestart) {
-				if ($SmoServer.NetName -ne [System.Net.Dns]::GetHostName()) {
-					New-PSSession -ComputerName $SmoServer.Information.FullyQualifiedNetName
+				if ($SmoServerObject.NetName -ne [System.Net.Dns]::GetHostName()) {
+					New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 				}
 			}
 		}
 		catch {
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				if (Test-Path -Path Variable:\SmoServer) {
-					if ($SmoServer -is [Microsoft.SqlServer.Management.Smo.Server]) {
-						Disconnect-SmoServer -SmoServerObject $SmoServer
+				if (Test-Path -Path Variable:\SmoServerObject) {
+					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
+						Disconnect-SmoServer -SmoServerObject $SmoServerObject
 					}
 				}
 			}
@@ -4897,7 +4854,7 @@ function Set-SqlServerStartupParameter {
 
 	process {
 		try {
-			$StartupParameters = Get-SqlServerStartupParameter -SmoServerObject $SmoServer
+			$StartupParameters = Get-SqlServerStartupParameter -SmoServerObject $SmoServerObject
 
 			$StartupParameter = $StartupParameters.where({$_.Name -eq $Name})
 
@@ -4927,7 +4884,7 @@ function Set-SqlServerStartupParameter {
 				$NewStartupParameters.Add($Parameter.ToString())
 			}
 
-			$Service = $SmoWmiManagedComputer.Services[$SmoServer.ServiceName]
+			$Service = $SmoWmiManagedComputer.Services[$SmoServerObject.ServiceName]
 
 			$Service.StartupParameters = [string]::Join(';', $NewStartupParameters)
 
@@ -4936,15 +4893,15 @@ function Set-SqlServerStartupParameter {
 			}
 
 			if ($ServiceRestart) {
-				if ($PSCmdlet.ShouldProcess($SmoServer.NetName, 'Restart Service')) {
+				if ($PSCmdlet.ShouldProcess($SmoServerObject.NetName, 'Restart Service')) {
 					if ($SqlInstanceName -in @('localhost', [System.Net.Dns]::GetHostName(), [System.Net.Dns]::GetHostEntry([System.Net.Dns]::GetHostName()).HostName)) {
-						Restart-Service -Name $SmoServer.ServiceName -Force
+						Restart-Service -Name $SmoServerObject.ServiceName -Force
 					} else {
-						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServer.ServiceName
+						Restart-RemoteService -PSSession $PSSession -ServiceName $SmoServerObject.ServiceName
 					}
 				}
 			} else {
-				Write-Warning "The Service $($SmoServer.ServiceName) must be restarted for the change to take effect."
+				Write-Warning "The Service $($SmoServerObject.ServiceName) must be restarted for the change to take effect."
 			}
 		}
 		catch {
@@ -4956,7 +4913,7 @@ function Set-SqlServerStartupParameter {
 			}
 
 			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
-				Disconnect-SmoServer -SmoServerObject $SmoServer
+				Disconnect-SmoServer -SmoServerObject $SmoServerObject
 			}
 		}
 	}

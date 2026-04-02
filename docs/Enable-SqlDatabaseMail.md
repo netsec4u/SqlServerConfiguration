@@ -60,7 +60,7 @@ Enables Database Mail on the specified SQL Server instance.
 
 ```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-Add-SqlDatabaseMail -SmoServerObject $SmoServer
+Enable-SqlDatabaseMail -SmoServerObject $SmoServer
 ```
 
 Enables Database Mail on the specified SQL Server instance using the SmoServer session.

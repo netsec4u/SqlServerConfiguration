@@ -53,19 +53,19 @@ Additionally, you can filter the results by profile name and account name.
 ### Example 1
 
 ```powershell
-Get-SqlDatabaseMailAccount -ServerInstance "MyServer" -MailAccountName "MyMailAccount"
+Get-SqlDatabaseMailProfileAccount -ServerInstance "MyServer" -MailProfileName "MyMailProfile"
 ```
 
-Retrieves a specific Database Mail Account from the specified SQL Server instance.
+Retrieves a specific Database Mail Profile Account from the specified SQL Server instance.
 
 ### Example 2
 
 ```powershell
 $SmoServer = Connect-SmoServer -ServerInstance MyServer
-Get-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName "MyMailAccount"
+Get-SqlDatabaseMailProfileAccount -SmoServerObject $SmoServer -MailProfileName "MyMailProfile"
 ```
 
-Retrieves a specific Database Mail Account using the SmoServer session.
+Retrieves a specific Database Mail Profile Account using the SmoServer session.
 
 ## PARAMETERS
 
@@ -164,7 +164,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-### SqlServerConfiguration.SqlDatabaseMailProfilePrincipal
+### SqlServerConfiguration.SqlDatabaseMailProfileAccount
 
 
 

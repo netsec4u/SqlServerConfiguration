@@ -1695,7 +1695,7 @@ Enable-SqlConnectionEncryption -SmoServerObject $SmoServer -CertificateThumbprin
         <maml:introduction>
         </maml:introduction>
         <dev:code>$SmoServer = Connect-SmoServer -ServerInstance MyServer
-Add-SqlDatabaseMail -SmoServerObject $SmoServer</dev:code>
+Enable-SqlDatabaseMail -SmoServerObject $SmoServer</dev:code>
         <dev:remarks>
           <maml:para>Enables Database Mail on the specified SQL Server instance using the SmoServer session.</maml:para>
         </dev:remarks>
@@ -2363,9 +2363,9 @@ Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName "Default
         <maml:title>--------- Example 1 ---------</maml:title>
         <maml:introduction>
         </maml:introduction>
-        <dev:code>Get-SqlDatabaseMailAccount -ServerInstance "MyServer" -MailAccountName "MyMailAccount"</dev:code>
+        <dev:code>Get-SqlDatabaseMailProfileAccount -ServerInstance "MyServer" -MailProfileName "MyMailProfile"</dev:code>
         <dev:remarks>
-          <maml:para>Retrieves a specific Database Mail Account from the specified SQL Server instance.</maml:para>
+          <maml:para>Retrieves a specific Database Mail Profile Account from the specified SQL Server instance.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
@@ -2373,9 +2373,9 @@ Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName "Default
         <maml:introduction>
         </maml:introduction>
         <dev:code>$SmoServer = Connect-SmoServer -ServerInstance MyServer
-Get-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName "MyMailAccount"</dev:code>
+Get-SqlDatabaseMailProfileAccount -SmoServerObject $SmoServer -MailProfileName "MyMailProfile"</dev:code>
         <dev:remarks>
-          <maml:para>Retrieves a specific Database Mail Account using the SmoServer session.</maml:para>
+          <maml:para>Retrieves a specific Database Mail Profile Account using the SmoServer session.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
