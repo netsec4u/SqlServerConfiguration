@@ -2098,7 +2098,7 @@ function Enable-SqlServerProtocol {
 			$ServerProtocol = Get-SqlServerProtocol -SmoServerObject $SmoServerObject -Protocol $Protocol
 
 			if ($PSCmdlet.ShouldProcess($Protocol, 'Enable SQL Server Protocol')) {
-				$ServerProtocol.IsEnabled = $false
+				$ServerProtocol.IsEnabled = $true
 				$ServerProtocol.Alter()
 			}
 
