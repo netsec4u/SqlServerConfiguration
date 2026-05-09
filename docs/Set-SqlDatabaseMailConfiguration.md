@@ -1,10 +1,10 @@
 ﻿---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
-HelpUri: ''
+HelpUri: https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Set-SqlDatabaseMailConfiguration.md
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 01/26/2026
+ms.date: 05/08/2026
 PlatyPS schema version: 2024-05-01
 title: Set-SqlDatabaseMailConfiguration
 ---
@@ -24,6 +24,8 @@ Set-SqlDatabaseMailConfiguration
   -ServerInstance <string>
   -MailConfigurationName <DatabaseMailConfiguration>
   -MailConfigurationValue <string>
+  [-WhatIf]
+  [-Confirm]
   [<CommonParameters>]
 ```
 
@@ -34,6 +36,8 @@ Set-SqlDatabaseMailConfiguration
   -SmoServerObject <Server>
   -MailConfigurationName <DatabaseMailConfiguration>
   -MailConfigurationValue <string>
+  [-WhatIf]
+  [-Confirm]
   [<CommonParameters>]
 ```
 
@@ -66,6 +70,28 @@ Set-SqlDatabaseMailConfiguration -SmoServerObject $SmoServer -MailConfigurationN
 Set the Database Mail configuration option MaxFileSize to 10240 KB using the SmoServer session.
 
 ## PARAMETERS
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- cf
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
 
 ### -MailConfigurationName
 
@@ -151,6 +177,28 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
+### -WhatIf
+
+Runs the command in a mode that only reports what would happen without performing the actions.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+DefaultValue: ''
+SupportsWildcards: false
+Aliases:
+- wi
+ParameterSets:
+- Name: (All)
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
@@ -171,6 +219,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 
 ## RELATED LINKS
-
-
 

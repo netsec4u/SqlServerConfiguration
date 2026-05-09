@@ -1,11 +1,11 @@
 ---
 document type: module
 Help Version: 2.0.0.0
-HelpInfoUri: https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/SqlServerConfiguration.md
+HelpInfoUri: https://netsec4u.github.io/Help/SqlServerConfiguration/
 Locale: en-US
 Module Guid: dc09a6b5-033c-457a-995a-ea12efd8eb80
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 05/08/2026
 PlatyPS schema version: 2024-05-01
 title: SqlServerConfiguration Module
 ---

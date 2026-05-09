@@ -4,7 +4,7 @@
 RootModule = 'SqlServerConfiguration.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.2.0.2'
+ModuleVersion = '1.2.0.3'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core', 'Desktop')
@@ -163,7 +163,7 @@ PrivateData = @{
 } # End of PrivateData hashtable
 
 # HelpInfo URI of this module
-HelpInfoURI = 'https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/SqlServerConfiguration.md'
+HelpInfoURI = 'https://netsec4u.github.io/Help/SqlServerConfiguration/'
 
 # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
 # DefaultCommandPrefix = ''

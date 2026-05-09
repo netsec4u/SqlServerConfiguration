@@ -1,10 +1,10 @@
 ---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
-HelpUri: ''
+HelpUri: https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Add-SqlServerStartupParameter.md
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 05/08/2026
 PlatyPS schema version: 2024-05-01
 title: Add-SqlServerStartupParameter
 ---
@@ -202,8 +202,7 @@ HelpMessage: ''
 
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs.
-The cmdlet is not run.
+Runs the command in a mode that only reports what would happen without performing the actions.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -244,6 +243,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 
 ## RELATED LINKS
-
-None.
 

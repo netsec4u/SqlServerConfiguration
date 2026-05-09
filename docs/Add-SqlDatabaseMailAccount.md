@@ -1,10 +1,10 @@
 ﻿---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
-HelpUri: ''
+HelpUri: https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Add-SqlDatabaseMailAccount.md
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 01/26/2026
+ms.date: 05/08/2026
 PlatyPS schema version: 2024-05-01
 title: Add-SqlDatabaseMailAccount
 ---
@@ -403,6 +403,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 
 ## RELATED LINKS
-
-None
 

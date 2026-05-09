@@ -1,10 +1,10 @@
 ---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
-HelpUri: ''
+HelpUri: https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlServerStartupParameter.md
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 05/08/2026
 PlatyPS schema version: 2024-05-01
 title: Get-SqlServerStartupParameter
 ---
@@ -127,6 +127,4 @@ https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/database
 
 
 ## RELATED LINKS
-
-None.
 

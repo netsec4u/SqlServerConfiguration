@@ -344,7 +344,7 @@ Add-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName 'MyAccou
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Add-SqlDatabaseMailAccount.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -545,7 +545,7 @@ Add-SqlDatabaseMailProfileAccount -SmoServerObject $SmoServer -MailProfileName '
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Add-SqlDatabaseMailProfileAccount.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -746,7 +746,7 @@ Add-SqlDatabaseMailProfilePrincipal -SmoServerObject $SmoServer -MailProfileName
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Add-SqlDatabaseMailProfilePrincipal.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -804,8 +804,7 @@ Add-SqlDatabaseMailProfilePrincipal -SmoServerObject $SmoServer -MailProfileName
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -851,8 +850,7 @@ The cmdlet is not run.</maml:para>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -904,8 +902,7 @@ The cmdlet is not run.</maml:para>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+          <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
       </command:parameter>
@@ -950,7 +947,7 @@ Add-SqlServerStartupParameter -SmoServerObject $SmoServer -Name TraceFlag -Value
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Add-SqlServerStartupParameter.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -1041,7 +1038,7 @@ Add-SqlServerStartupParameter -SmoServerObject $SmoServer -Name TraceFlag -Value
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Connect-SmoWmiManagedComputer.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -1179,7 +1176,7 @@ Disable-SqlDatabaseMail -SmoServerObject $SmoServer</dev:code>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Disable-SqlDatabaseMail.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -1230,8 +1227,7 @@ Disable-SqlDatabaseMail -SmoServerObject $SmoServer</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -1270,8 +1266,7 @@ The cmdlet is not run.</maml:para>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -1316,8 +1311,7 @@ The cmdlet is not run.</maml:para>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+          <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
       </command:parameter>
@@ -1362,7 +1356,7 @@ Disable-SqlServerProtocol -SmoServerObject $SmoServer -Protocol Np</dev:code>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Disable-SqlServerProtocol.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -1420,8 +1414,7 @@ Disable-SqlServerProtocol -SmoServerObject $SmoServer -Protocol Np</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -1467,8 +1460,7 @@ The cmdlet is not run.</maml:para>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -1520,8 +1512,7 @@ The cmdlet is not run.</maml:para>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+          <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
       </command:parameter>
@@ -1566,7 +1557,7 @@ Enable-SqlConnectionEncryption -SmoServerObject $SmoServer -CertificateThumbprin
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Enable-SqlConnectionEncryption.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -1704,7 +1695,7 @@ Enable-SqlDatabaseMail -SmoServerObject $SmoServer</dev:code>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Enable-SqlDatabaseMail.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -1755,8 +1746,7 @@ Enable-SqlDatabaseMail -SmoServerObject $SmoServer</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -1795,8 +1785,7 @@ The cmdlet is not run.</maml:para>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -1841,8 +1830,7 @@ The cmdlet is not run.</maml:para>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+          <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
       </command:parameter>
@@ -1887,7 +1875,7 @@ Enable-SqlServerProtocol -SmoServerObject $SmoServer -Protocol Tcp</dev:code>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Enable-SqlServerProtocol.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -2007,7 +1995,7 @@ Get-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName "MyMailA
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlDatabaseMailAccount.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -2127,7 +2115,7 @@ Get-SqlDatabaseMailConfiguration -SmoServerObject $SmoServer</dev:code>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlDatabaseMailConfiguration.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -2244,7 +2232,7 @@ Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName "Default
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlDatabaseMailProfile.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -2346,7 +2334,7 @@ Get-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName "Default
     <command:returnValues>
       <command:returnValue>
         <dev:type>
-          <dev:name>SqlServerConfiguration.SqlDatabaseMailProfilePrincipal</dev:name>
+          <dev:name>SqlServerConfiguration.SqlDatabaseMailProfileAccount</dev:name>
         </dev:type>
         <maml:description>
           <maml:para />
@@ -2382,7 +2370,7 @@ Get-SqlDatabaseMailProfileAccount -SmoServerObject $SmoServer -MailProfileName "
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlDatabaseMailProfileAccount.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -2523,7 +2511,7 @@ Get-SqlDatabaseMailProfilePrincipal -ServerInstance "MyServer" -MailProfileName 
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlDatabaseMailProfilePrincipal.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -2619,7 +2607,7 @@ Get-SqlFilestreamSetting -SmoServerObject $SmoServer</dev:code>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlFilestreamSetting.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -2715,7 +2703,7 @@ Get-SqlProtocolProperty -SmoServerObject $SmoServer</dev:code>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlProtocolProperty.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -2832,7 +2820,7 @@ Get-SqlServerProtocol -SmoServerObject $SmoServer</dev:code>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlServerProtocol.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -2949,7 +2937,7 @@ Get-SqlServerService -SmoServerObject $SmoServer</dev:code>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlServerService.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -3045,7 +3033,7 @@ Get-SqlServerStartupParameter -SmoServerObject $SmoServer</dev:code>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlServerStartupParameter.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -3225,7 +3213,7 @@ New-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName "Support
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/New-SqlDatabaseMailProfile.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -3384,7 +3372,7 @@ Remove-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName "MyMa
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Remove-SqlDatabaseMailAccount.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -3544,7 +3532,7 @@ Remove-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName "Aler
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Remove-SqlDatabaseMailProfile.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -3724,7 +3712,7 @@ Remove-SqlDatabaseMailProfileAccount -SmoServerObject $SmoServer -MailProfileNam
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Remove-SqlDatabaseMailProfileAccount.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -3904,7 +3892,7 @@ Remove-SqlDatabaseMailProfilePrincipal -SmoServerObject $SmoServer -MailProfileN
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Remove-SqlDatabaseMailProfilePrincipal.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -3962,8 +3950,7 @@ Remove-SqlDatabaseMailProfilePrincipal -SmoServerObject $SmoServer -MailProfileN
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -4009,8 +3996,7 @@ The cmdlet is not run.</maml:para>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -4062,8 +4048,7 @@ The cmdlet is not run.</maml:para>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+          <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
       </command:parameter>
@@ -4108,7 +4093,7 @@ Remove-SqlServerStartupParameter -SmoServerObject $SmoServer -Name TraceFlag -Va
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Remove-SqlServerStartupParameter.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -4477,7 +4462,7 @@ Set-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName "MyMailA
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Set-SqlDatabaseMailAccount.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -4497,6 +4482,13 @@ Set-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName "MyMailA
       <command:syntaxItem>
         <maml:name>Set-SqlDatabaseMailConfiguration
 </maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts you for confirmation before running the cmdlet.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>MailConfigurationName</maml:name>
           <maml:description>
@@ -4518,10 +4510,24 @@ Set-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName "MyMailA
           </maml:description>
           <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Set-SqlDatabaseMailConfiguration
 </maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts you for confirmation before running the cmdlet.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>MailConfigurationName</maml:name>
           <maml:description>
@@ -4543,9 +4549,23 @@ Set-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName "MyMailA
           </maml:description>
           <command:parameterValue required="true" variableLength="true">Microsoft.SqlServer.Management.Smo.Server</command:parameterValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>Prompts you for confirmation before running the cmdlet.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+      </command:parameter>
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
         <maml:name>MailConfigurationName</maml:name>
         <maml:description>
@@ -4573,6 +4593,13 @@ Set-SqlDatabaseMailAccount -SmoServerObject $SmoServer -MailAccountName "MyMailA
           <maml:para>An existing SMO Server object representing the SQL Server instance.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="true">Microsoft.SqlServer.Management.Smo.Server</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
       </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -4615,7 +4642,7 @@ Set-SqlDatabaseMailConfiguration -SmoServerObject $SmoServer -MailConfigurationN
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Set-SqlDatabaseMailConfiguration.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -4635,6 +4662,13 @@ Set-SqlDatabaseMailConfiguration -SmoServerObject $SmoServer -MailConfigurationN
       <command:syntaxItem>
         <maml:name>Set-SqlDatabaseMailProfile
 </maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts you for confirmation before running the cmdlet.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>Description</maml:name>
           <maml:description>
@@ -4663,10 +4697,24 @@ Set-SqlDatabaseMailConfiguration -SmoServerObject $SmoServer -MailConfigurationN
           </maml:description>
           <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Set-SqlDatabaseMailProfile
 </maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts you for confirmation before running the cmdlet.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>Description</maml:name>
           <maml:description>
@@ -4695,9 +4743,23 @@ Set-SqlDatabaseMailConfiguration -SmoServerObject $SmoServer -MailConfigurationN
           </maml:description>
           <command:parameterValue required="true" variableLength="true">Microsoft.SqlServer.Management.Smo.Server</command:parameterValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>Prompts you for confirmation before running the cmdlet.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
+      </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
         <maml:name>Description</maml:name>
         <maml:description>
@@ -4732,6 +4794,13 @@ Set-SqlDatabaseMailConfiguration -SmoServerObject $SmoServer -MailConfigurationN
           <maml:para>An existing SMO Server object representing the SQL Server instance.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="true">Microsoft.SqlServer.Management.Smo.Server</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
       </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -4774,7 +4843,7 @@ Set-SqlDatabaseMailProfile -SmoServerObject $SmoServer -MailProfileName "OldProf
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Set-SqlDatabaseMailProfile.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -4975,7 +5044,7 @@ Set-SqlFilestreamSetting -SmoServerObject $SmoServer -AccessLevel 3</dev:code>
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Set-SqlFilestreamSetting.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -5054,8 +5123,7 @@ Set-SqlFilestreamSetting -SmoServerObject $SmoServer -AccessLevel 3</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -5122,8 +5190,7 @@ The cmdlet is not run.</maml:para>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -5196,8 +5263,7 @@ The cmdlet is not run.</maml:para>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+          <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
       </command:parameter>
@@ -5242,7 +5308,7 @@ Set-SqlProtocolProperty -SmoServerObject $SmoServer -HideInstance $true</dev:cod
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Set-SqlProtocolProperty.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>
@@ -5300,8 +5366,7 @@ Set-SqlProtocolProperty -SmoServerObject $SmoServer -HideInstance $true</dev:cod
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -5347,8 +5412,7 @@ The cmdlet is not run.</maml:para>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+            <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
         </command:parameter>
@@ -5400,8 +5464,7 @@ The cmdlet is not run.</maml:para>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>Shows what would happen if the cmdlet runs.
-The cmdlet is not run.</maml:para>
+          <maml:para>Runs the command in a mode that only reports what would happen without performing the actions.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="true">System.Management.Automation.SwitchParameter</command:parameterValue>
       </command:parameter>
@@ -5446,7 +5509,7 @@ Set-SqlServerStartupParameter -SmoServerObject $SmoServer -Name ErrorLogPath -Va
     <command:relatedLinks>
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
-        <command:uri />
+        <command:uri>https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Set-SqlServerStartupParameter.md</command:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>

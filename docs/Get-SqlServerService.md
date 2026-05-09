@@ -1,10 +1,10 @@
 ---
 document type: cmdlet
 external help file: SqlServerConfiguration-Help.xml
-HelpUri: ''
+HelpUri: https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Get-SqlServerService.md
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 07/29/2025
+ms.date: 05/08/2026
 PlatyPS schema version: 2024-05-01
 title: Get-SqlServerService
 ---
@@ -149,6 +149,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 
 ## RELATED LINKS
-
-None.
 
