@@ -30,6 +30,13 @@ enum DatabaseMailConfiguration {
 	MaxFileSize
 	ProhibitedExtensions
 }
+
+enum ExtendedProtection {
+	Off
+	Allowed
+	Required
+}
+
 enum ServerProtocols {
 	Np
 	Sm
@@ -4540,7 +4547,7 @@ function Set-SqlProtocolProperty {
 			ValueFromPipeline = $false,
 			ValueFromPipelineByPropertyName = $false
 		)]
-		[bool]$ExtendedProtection,
+		[ExtendedProtection]$ExtendedProtection,
 
 		[Parameter(
 			Mandatory = $false,
@@ -4652,10 +4659,24 @@ function Set-SqlProtocolProperty {
 					$Settings.Add('Certificate', $CertificateThumbprint)
 				}
 				'ExtendedProtection' {
-					if ($ExtendedProtection) {
-						[int]$KeyValue = 1
-					} else {
-						[int]$KeyValue = 0
+					switch ($ExtendedProtection) {
+						'Off' {
+							[int]$KeyValue = 0
+						}
+						'Allowed' {
+							[int]$KeyValue = 1
+						}
+						'Required' {
+							[int]$KeyValue = 2
+						}
+						Default {
+							throw [System.Management.Automation.ErrorRecord]::New(
+								[Exception]::New('Unknown Extended Protection Value.'),
+								'1',
+								[System.Management.Automation.ErrorCategory]::InvalidArgument,
+								$ExtendedProtection
+							)
+						}
 					}
 
 					$Settings.Add('ExtendedProtection', $KeyValue)

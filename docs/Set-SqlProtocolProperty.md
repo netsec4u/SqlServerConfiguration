@@ -4,7 +4,7 @@ external help file: SqlServerConfiguration-Help.xml
 HelpUri: https://github.com/netsec4u/SqlServerConfiguration/blob/main/docs/Set-SqlProtocolProperty.md
 Locale: en-US
 Module Name: SqlServerConfiguration
-ms.date: 05/08/2026
+ms.date: 06/15/2026
 PlatyPS schema version: 2024-05-01
 title: Set-SqlProtocolProperty
 ---
@@ -26,7 +26,7 @@ Set-SqlProtocolProperty
   [-RequireEncryption <bool>]
   [-RequireStrictEncryption <bool>]
   [-HideInstance <bool>]
-  [-ExtendedProtection <bool>]
+  [-ExtendedProtection <ExtendedProtection>]
   [-ServiceRestart]
   [-WhatIf]
   [-Confirm]
@@ -42,7 +42,7 @@ Set-SqlProtocolProperty
   [-RequireEncryption <bool>]
   [-RequireStrictEncryption <bool>]
   [-HideInstance <bool>]
-  [-ExtendedProtection <bool>]
+  [-ExtendedProtection <ExtendedProtection>]
   [-ServiceRestart]
   [-WhatIf]
   [-Confirm]
@@ -127,7 +127,7 @@ HelpMessage: ''
 Specifies whether extended protection is enabled for connections.
 
 ```yaml
-Type: System.Boolean
+Type: ExtendedProtection
 DefaultValue: None
 SupportsWildcards: false
 Aliases: []

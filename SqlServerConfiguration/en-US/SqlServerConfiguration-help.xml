@@ -5083,7 +5083,7 @@ Set-SqlFilestreamSetting -SmoServerObject $SmoServer -AccessLevel 3</dev:code>
           <maml:description>
             <maml:para>Specifies whether extended protection is enabled for connections.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="true">System.Boolean</command:parameterValue>
+          <command:parameterValue required="false" variableLength="true">ExtendedProtection</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>HideInstance</maml:name>
@@ -5150,7 +5150,7 @@ Set-SqlFilestreamSetting -SmoServerObject $SmoServer -AccessLevel 3</dev:code>
           <maml:description>
             <maml:para>Specifies whether extended protection is enabled for connections.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="true">System.Boolean</command:parameterValue>
+          <command:parameterValue required="false" variableLength="true">ExtendedProtection</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
           <maml:name>HideInstance</maml:name>
@@ -5216,7 +5216,7 @@ Set-SqlFilestreamSetting -SmoServerObject $SmoServer -AccessLevel 3</dev:code>
         <maml:description>
           <maml:para>Specifies whether extended protection is enabled for connections.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="true">System.Boolean</command:parameterValue>
+        <command:parameterValue required="false" variableLength="true">ExtendedProtection</command:parameterValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
         <maml:name>HideInstance</maml:name>
