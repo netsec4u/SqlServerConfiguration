@@ -85,7 +85,7 @@ The thumbprint of the certificate to use for SSL encryption.
 
 ```yaml
 Type: System.Object
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -128,7 +128,7 @@ Specifies whether extended protection is enabled for connections.
 
 ```yaml
 Type: ExtendedProtection
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -149,7 +149,7 @@ Specifies whether the SQL Server instance is hidden from the network.
 
 ```yaml
 Type: System.Boolean
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -170,7 +170,7 @@ Specifies whether encryption is required for connections.
 
 ```yaml
 Type: System.Boolean
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -191,7 +191,7 @@ Specifies whether strict encryption is required for connections.
 
 ```yaml
 Type: System.Boolean
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -212,7 +212,7 @@ The name of the SQL Server instance to connect to.
 
 ```yaml
 Type: System.String
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -254,7 +254,7 @@ An existing SMO Server object representing the SQL Server instance.
 
 ```yaml
 Type: Microsoft.SqlServer.Management.Smo.Server
-DefaultValue: None
+DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:

@@ -436,7 +436,7 @@ function Add-CertificatePrivateKeyAccessRule {
 
 			$PrivateKeyFileAcl.AddAccessRule($FileSystemAccessRule)
 
-			if ($PSCmdlet.ShouldProcess($PrivateKeyPath.FullName, "Add access rule")) {
+			if ($PSCmdlet.ShouldProcess($PrivateKeyPath.FullName, 'Add access rule')) {
 				Set-Acl -Path $PrivateKeyPath.FullName -AclObject $PrivateKeyFileAcl
 			}
 		}
@@ -690,7 +690,7 @@ function Get-KeyContainerPath {
 	)
 
 	begin {
-		$CryptoFolder = Join-Path -Path $([Environment]::GetFolderPath("CommonApplicationData")) -ChildPath 'Microsoft\Crypto'
+		$CryptoFolder = Join-Path -Path $([Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'Microsoft\Crypto'
 	}
 
 	process {
@@ -760,7 +760,7 @@ function Restart-RemoteService {
 	}
 
 	process {
-		if ($PSCmdlet.ShouldProcess($PSSession.ComputerName, "Restart service")) {
+		if ($PSCmdlet.ShouldProcess($PSSession.ComputerName, 'Restart service')) {
 			Invoke-Command -Session $PSSession -ScriptBlock $ScriptBlock -ArgumentList $ServiceName
 		}
 	}
@@ -1374,12 +1374,12 @@ function Add-SqlServerStartupParameter {
 
 			if ($ServiceRestart) {
 				if ($SmoServerObject.NetName -ne [System.Net.Dns]::GetHostName()) {
-					New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
+					$PSSession = New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 				}
 			}
 		}
 		catch {
-			if ($PSCmdlet.ParameterSetName -in $DatabaseNameParameterSets) {
+			if ($PSCmdlet.ParameterSetName -in $ServerInstanceParameterSets) {
 				if (Test-Path -Path Variable:\SmoServerObject) {
 					if ($SmoServerObject -is [Microsoft.SqlServer.Management.Smo.Server]) {
 						Disconnect-SmoServer -SmoServerObject $SmoServerObject
@@ -1790,7 +1790,7 @@ function Enable-SqlConnectionEncryption {
 			}
 
 			#Region Select Certificate
-			if ($PSBoundParameters.ContainsKey("CertificateThumbprint")) {
+			if ($PSBoundParameters.ContainsKey('CertificateThumbprint')) {
 				$CertificateParameters = @{
 					FindValue = $CertificateThumbprint
 					StoreLocation = 'LocalMachine'
@@ -1837,7 +1837,7 @@ function Enable-SqlConnectionEncryption {
 				}
 
 				if ($null -eq $ValidCertificate) {
-					$WildCard = [string]::Format("{0}.{1}", '*', $Win32ComputerSystem.Domain)
+					$WildCard = [string]::Format('{0}.{1}', '*', $Win32ComputerSystem.Domain)
 
 					$X509Certificate2Collection = Find-Certificate -FindValue $WildCard -X509FindType 'FindBySubjectName' -StoreLocation 'LocalMachine' -StoreName 'My'
 
@@ -1863,7 +1863,7 @@ function Enable-SqlConnectionEncryption {
 					AccessControlType = 'Allow'
 				}
 
-				if ($PSCmdlet.ShouldProcess($ValidCertificate.Subject, "Add private key access rule")) {
+				if ($PSCmdlet.ShouldProcess($ValidCertificate.Subject, 'Add private key access rule')) {
 					Add-CertificatePrivateKeyAccessRule @AccessRuleParameters
 				}
 			}
@@ -1879,7 +1879,7 @@ function Enable-SqlConnectionEncryption {
 				$PropertyParameters.Add('RequireEncryption', $true)
 			}
 
-			if ($PSCmdlet.ShouldProcess($SmoServerObject.NetName, "Set encryption properties")) {
+			if ($PSCmdlet.ShouldProcess($SmoServerObject.NetName, 'Set encryption properties')) {
 				Set-SQLProtocolProperty @PropertyParameters
 			}
 			#EndRegion
@@ -2736,7 +2736,7 @@ function Get-SqlFilestreamSetting {
 
 			$CimInstanceParameters = @{
 				CimSession  = $CimSession
-				Namespace = $("root\Microsoft\SQLServer\" + $Namespace.Name)
+				Namespace = $('root\Microsoft\SQLServer\' + $Namespace.Name)
 				ClassName = 'FilestreamSettings'
 			}
 
@@ -2819,7 +2819,7 @@ function Get-SqlProtocolProperty {
 				New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 			}
 
-			$RegistryPath = [string]::Format("HKLM:\{0}\MSSQLServer\SuperSocketNetLib", $SmoWmiManagedComputer.Services[$SmoServerObject.ServiceName].AdvancedProperties['REGROOT'].Value)
+			$RegistryPath = [string]::Format('HKLM:\{0}\MSSQLServer\SuperSocketNetLib', $SmoWmiManagedComputer.Services[$SmoServerObject.ServiceName].AdvancedProperties['REGROOT'].Value)
 
 			$ScriptBlock = {
 				param ($Path)
@@ -4436,7 +4436,7 @@ function Set-SqlFilestreamSetting {
 
 			$CimMethodParameters = @{
 				CimSession = $CimSession
-				Namespace = $("root\Microsoft\SQLServer\" + $Namespace.Name)
+				Namespace = $('root\Microsoft\SQLServer\' + $Namespace.Name)
 				ClassName = 'FilestreamSettings'
 				MethodName = 'EnableFilestream'
 				Arguments = @{
@@ -4606,7 +4606,7 @@ function Set-SqlProtocolProperty {
 				$PSSession = New-PSSession -ComputerName $SmoServerObject.Information.FullyQualifiedNetName
 			}
 
-			$RegistryPath = [string]::Format("HKLM:\{0}\MSSQLServer\SuperSocketNetLib", $SmoWmiManagedComputer.Services[$SmoServerObject.ServiceName].AdvancedProperties['REGROOT'].Value)
+			$RegistryPath = [string]::Format('HKLM:\{0}\MSSQLServer\SuperSocketNetLib', $SmoWmiManagedComputer.Services[$SmoServerObject.ServiceName].AdvancedProperties['REGROOT'].Value)
 
 			$ScriptBlock = {
 				param ($Path, $Name, $Value)
@@ -4888,7 +4888,7 @@ function Set-SqlServerStartupParameter {
 				)
 			}
 
-			if ($StartupParameter.ValueType -eq "OptionOnly") {
+			if ($StartupParameter.ValueType -eq 'OptionOnly') {
 				throw [System.Management.Automation.ErrorRecord]::New(
 					[Exception]::New('Parameter does not have a value to modify.'),
 					'1',
@@ -5012,8 +5012,8 @@ function Connect-SmoWmiManagedComputer {
 # SIG # Begin signature block
 # MIInywYJKoZIhvcNAQcCoIInvDCCJ7gCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDy1bJaTslUF9a7
-# JV++F7fdi9ZaDAQfE19eSRVyk/fcDKCCINswggWNMIIEdaADAgECAhAOmxiO+dAt
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC98qrc5lTGAmDo
+# P/HBElr+udAYC49nxooJteLcNu08zKCCINswggWNMIIEdaADAgECAhAOmxiO+dAt
 # 5+/bUOIIQBhaMA0GCSqGSIb3DQEBDAUAMGUxCzAJBgNVBAYTAlVTMRUwEwYDVQQK
 # EwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xJDAiBgNV
 # BAMTG0RpZ2lDZXJ0IEFzc3VyZWQgSUQgUm9vdCBDQTAeFw0yMjA4MDEwMDAwMDBa
@@ -5193,34 +5193,34 @@ function Connect-SmoWmiManagedComputer {
 # Uy5BLjEkMCIGA1UEAxMbQ2VydHVtIENvZGUgU2lnbmluZyAyMDIxIENBAhBDuzRB
 # nypScc4/rofK9qMeMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAI
 # oAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIB
-# CzEOMAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIO3RgJ6KevfkcxJOt2uj
-# RmbYsC5FDcgYHQhsyTIwFr4FMA0GCSqGSIb3DQEBAQUABIICADXE+xj5GyRB8OiI
-# R+CvT0VYHmc6TUKYE3E9iGNhOcdqMty3Wovfo4pgGHccwjGpg1eVaX+beLIvac35
-# vN+664wMnLOkqp1+KsbMOnRbYmWAi3SQ4hCD8ECm+LYCqfI0IXD+rDMjKZ/17lhS
-# e7sV5rsWsKVj8CqGpr8iCOv9i6jgzna8614WLivWgQMtrroHVfvcTTduQXMK6Lsh
-# M7iBKd3Z3wuYZ7qhOkk2VBMky/lI9YVLuvekqrdKtLFX4DIFcG1mwgpbx48UUKb3
-# Py4n7CIpQ3PrnWpvBrCnxSVRqxf/AO5bTNUkWjg1+ycxkA66it3pNfPVNd8Xry1W
-# nG71DMh0tkya9ORq3CcB+j7P+wsGNo7POHQ41tkRmNtEp9vX2CvQZ5Plzsgkb29E
-# +vYWehmFKwKS/So456oeFprCbEfJ3+Z3Iv7IKGPWarjMzIfwA+AC6Poj4vmXzJus
-# mDqpyF4X4Kj1ipZa5e7GuoBN7pLK5AoAtfe3Lx2Ylan+lA2t7I/ZboLLfbLOJICB
-# rrK8rC0efEo51Uz1MYF5Ixjtz+fvOTrZkCCDMdyQBODaxr9KBnY6AP+PfvkBn2bD
-# Qbq3wiCDZdn+Nf+rdiu+JPJaC3D7FcEXRrUpNAf0b9pqNI1tFeQaQUymXr4xr7DY
-# fQHP8aJsl3lEo70SAJu+qb/gn3laoYIDJjCCAyIGCSqGSIb3DQEJBjGCAxMwggMP
+# CzEOMAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEICPz7PrswQvPrNzSELUb
+# 3TyuaEjMtOHbph6spsxf5+p1MA0GCSqGSIb3DQEBAQUABIICAERb4hE/K/DR+EkP
+# 2sDqQkhpn+Xu7twinQWTSBkw/mlWOBKzhw+9lxV/KvlJLFJfh1bTTA0fOAxfTv8e
+# PlNIzh/c7u5jkRBGrdfxaK3Pe3OewYrJ8cvA2Gg0Br3JJJdc4F1Rw8QBPYn6LjA2
+# mPOcQpoNsCXrKP2Xxr9PVgfPnNeVXzM1aoM1gbe9KYeEkdLRyW4kaH/gqbgRVtmH
+# 6+yaOtP+qp0PGmqlmDOCIejgygCmEgOQXn5iwy9WQqrNe/JQ0f0Gt88cAa2DtTzF
+# 5r+oU4d/QL9oOiArQZ5BCRl4J+UI6s18jZoAeBnUeOx2hR/K2W7iGvLgLNucO4mv
+# sJQG2YwjmUTVwQlR5yAtkRBwc8YShmLNiszeylKandOce70glqbnnpc/T508YL+4
+# pywelVmw0TQPCSvXt/WxS15WbhUA82K/MKTQzg/pBatE9Z91IvwoI2Egi1LFgA38
+# e03gYXASJyPMsJzw64SpA70rMSIzCq4gskBk/KmZV+Cu3zoZtmTIi9eduFN8jdBH
+# lfl09v0PdpxNBdfdrhe+NwYOMxMqbREdBPW5AIQFNTc8thvq3Nxxo9jCSGieSWHa
+# SG3dH2JLI1rtHZumBHZbSoPqSb/ugYJIXFzRZ9DW2PrKVXgibTbrsIaufayi8E+x
+# mMzQLmN6UKAy/RCWJN70clSD58kqoYIDJjCCAyIGCSqGSIb3DQEJBjGCAxMwggMP
 # AgEBMH0waTELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMUEw
 # PwYDVQQDEzhEaWdpQ2VydCBUcnVzdGVkIEc0IFRpbWVTdGFtcGluZyBSU0E0MDk2
 # IFNIQTI1NiAyMDI1IENBMQIQCE/cM09+RU7bww+P+ZIYNTANBglghkgBZQMEAgEF
 # AKBpMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTI2
-# MDkxMzE5MzYxNFowLwYJKoZIhvcNAQkEMSIEIFCfHBLeFS3HgzhBTaXhwJtMkfnE
-# U8sIYSTauNO4eIWSMA0GCSqGSIb3DQEBAQUABIICAGeQaD+SE3KMTVtDsJXoqlk8
-# VJcI/t54qH20/QMxwM0PVMshuZRudb9KY8czXEkwD/8oAdLCVVpAAeXK/EgsfSQ6
-# knRc9XssEtVhcwWscW6raOnAOiCMsgDi+tHXGyMMLcVF34kwCFsX9ZO2Tf0tvKPX
-# T2rycuMgC+7JnIYG3VWTfBnXeJKg8bcpDxvE+YjUBWK85HuMuGpRx2fpuqAyebpr
-# UctccG4hrsawdYUm6Jt1wXMmkvO420AZJgqmYXzHr7cnconQZQcLxOfVzVBj3LOa
-# zHG2r0UK5jfkeGWxHI/AKffcd40/DkNWKNmNGzYbAUloODlHAWiTl2QaP+IHqhtu
-# LB7BqwdWgraz0cqJ8+cQ4WA1UYPdpJHVA1qUmjhdMflOgDNgDkZXExTWEl/nUpne
-# BeyqPdqIijiWAsrZyaEoTlHK4JPgrkL1SGw0HveAEzubz9brZrSWA5aU1ie+tbYf
-# Y6tpV0ajslzB4uS5izT/LCSb4V+LTVkyXwig7GVeLse3ifHs108teAEAmQvFLLOn
-# XFxkVkRgAwMvxfbchronwyrr0LbDi8kKKzcHYE/Y4XwRbjcPgD2IqT1pVtScayk+
-# Uys2n4wnyLMnKdKjEnQcajsGXaxz3vj+RPZ+EUwhAZzEeO2KSHxNXlIRTfnP1y2A
-# Q5gBuVOMgWcYPwcnQP8N
+# MTAzMTE2MjgwMVowLwYJKoZIhvcNAQkEMSIEINB//Xk+2Wm1Rp7YpsBQBTDQtqRE
+# DI5GLuH7Pb5S2r4EMA0GCSqGSIb3DQEBAQUABIICAIR67SB+f9/64bku3duA17Lo
+# MiYq1i/NvsqwBVEu51vy6qRTZC048d8fh2EzS5esphzqKDdoZEvGFFbmQZVaRVkD
+# WdqFcae9gMBPVavJsByUD3xi7K7v97tsrVzjqCYdwd6TjcXKo2IIkc/sARIy+XkK
+# VaG0ciC9PQMzd3g2tu8OftHr+vH1lufGkbOtg52qBqhAp+LQ89+gFcLegfcw07Xc
+# eW5fUkO491lyPi2kPWvJaNcoNcbMafQagd/IbRY7W5MIJnDK2T09BYsfu+yy950I
+# MqjlKhKHGNfJDssoSP5a9d5EtR6bIPzfk1QZtn/CIcJDpCgLsco4cQyH9ydnu7dK
+# FDgbE1ToHHze336Jx5DHC9URVN6nI0NGWN7rGItzEku7iChSp7EJojcJT69hLuvJ
+# BqhMH4mH5JDAnYIoQV69gJ15qv5OqBfEiv2VdUOfQZR0AFlNbMPUbKe+L9BzcAXe
+# yc6ld26PxuaSsO7QQEC73vBGtfQRrtOfLRtx+8oADQ48hC/VKWwVD6oYSWWqNAB5
+# 5a3thEJ2fyVmgKYWMQslcWjW+i0y2L1cZGCIjDAMnNmBDbWs0fqA15LyUJthXgbT
+# jtSkES8+X/cZ96RgFKyqdJp/uzbs3J/JiX4VCXLTetOFRxXDTFVIw+pDoeg6Op+d
+# 4bqM2Riz/hUx76lgfdml
 # SIG # End signature block
